@@ -1,0 +1,21 @@
+{
+  "name": "HSP Exterior Cleaning",
+  "short_name": "HSP",
+  "description": "HSP Exterior Cleaning business management suite",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1e3c",
+  "theme_color": "#0f1e3c",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
