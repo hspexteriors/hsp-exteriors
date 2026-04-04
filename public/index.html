@@ -8,6 +8,8 @@
 <meta name="theme-color" content="#0f1e3c"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="apple-touch-icon" href="/icon.png"/>
+<link rel="apple-touch-startup-image" href="/icon.png"/>
 <meta name="apple-mobile-web-app-title" content="HSP"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -16,8 +18,7 @@
 :root{
   --navy:#0f1e3c;--navy2:#1a2f57;--navy3:#243d6e;
   --navy-light:#e8eef8;--accent:#2a7fd4;--accent-light:#d6e8f8;
-  --silver:#b8c8d8;--silver-light:#e8eef5;
-  --green:#1a7a5c;--green-light:#e8f5f0;
+  --silver:#b8c8d8;--green:#1a7a5c;--green-light:#e8f5f0;
   --amber:#c97a1a;--amber-light:#fdf3e3;
   --ink:#1a1a2e;--ink2:#3a4a6a;--ink3:#5a6a8a;--ink4:#8a9aba;
   --bg:#f0f4fa;--surface:#fff;--border:#d0d8e8;--border2:#b0bcd0;
@@ -27,8 +28,6 @@
 }
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;min-height:100vh;min-height:100dvh;}
 .shell{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
-
-/* TOPBAR */
 .topbar{background:var(--navy);padding:0 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3);min-height:60px;}
 .brand{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .brand img{height:40px;width:40px;object-fit:contain;border-radius:8px;background:#fff;}
@@ -38,8 +37,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
 .api-badge{font-size:10px;font-family:var(--mono);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);padding:5px 10px;border-radius:8px;color:rgba(255,255,255,.5);cursor:pointer;white-space:nowrap;}
 .api-badge.set{color:#4de8b0;border-color:#4de8b0;}
-
-/* LAYOUT */
 .desktop-layout{display:flex;flex:1;}
 .sidenav{display:none;}
 @media(min-width:768px){
@@ -50,38 +47,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
   .snav-item svg{width:16px;height:16px;flex-shrink:0;}
 }
 .main-content{flex:1;overflow-y:auto;}
-
-/* BOTTOM NAV */
 .bottom-nav{background:var(--navy);border-top:1px solid var(--navy2);display:flex;position:sticky;bottom:0;z-index:100;box-shadow:0 -2px 16px rgba(0,0,0,.2);}
 @media(min-width:768px){.bottom-nav{display:none;}}
 .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;cursor:pointer;color:var(--silver);font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;gap:4px;border-top:2px solid transparent;transition:all .15s;min-height:58px;}
 .bnav-item.active{color:#fff;border-top-color:var(--accent);}
 .bnav-item svg{width:22px;height:22px;flex-shrink:0;}
-
-/* MORE MENU */
 .more-menu{display:none;position:fixed;bottom:58px;left:0;right:0;background:var(--navy);border-top:1px solid var(--navy2);z-index:99;padding:8px 0;}
 .more-menu.open{display:block;}
 .more-item{display:flex;align-items:center;gap:14px;padding:15px 20px;color:var(--silver);font-size:15px;font-weight:500;cursor:pointer;}
 .more-item.active,.more-item:hover{color:#fff;}
 .more-item svg{width:20px;height:20px;}
-
-/* MAIN */
 .main{padding:16px;max-width:900px;width:100%;margin:0 auto;}
 @media(min-width:768px){.main{padding:24px;}}
-
-/* STATS */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
 @media(min-width:768px){.stats{grid-template-columns:repeat(6,1fr);}}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow);}
 .stat-label{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600;}
 .stat-val{font-size:22px;font-weight:700;color:var(--navy);}
-
-/* SECTION */
 .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
 .sec-title{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.08em;}
 .btn-row{display:flex;gap:6px;flex-wrap:wrap;}
-
-/* BUTTONS */
 .btn{padding:11px 16px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--ink);font-family:var(--font);transition:all .12s;white-space:nowrap;}
 .btn:hover{background:var(--bg);}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
@@ -89,23 +74,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 .btn-primary{background:var(--navy);color:#fff;border-color:var(--navy);}
 .btn-primary:hover:not(:disabled){background:var(--navy2);}
 .btn-sm{padding:8px 13px;font-size:12px;}
-
-/* CARDS */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);}
 .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
 .card-name{font-size:16px;font-weight:700;color:var(--navy);}
 .card-sub{font-size:13px;color:var(--ink3);margin-top:3px;line-height:1.5;}
 .card-foot{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap;}
 .card-foot .btn{flex:1;min-width:100px;text-align:center;}
-
-/* BADGES */
 .badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
 .b-lead{background:#dbeafe;color:#1e40af;}
 .b-quoted{background:#fef3c7;color:#92400e;}
 .b-active{background:#d1fae5;color:#065f46;}
 .b-done{background:#f1f5f9;color:#475569;}
-
-/* PIPELINE */
 .pipeline{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
 @media(min-width:600px){.pipeline{grid-template-columns:repeat(4,1fr);}}
 .pipe-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px;box-shadow:var(--shadow);}
@@ -115,8 +94,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 .pipe-cname{font-size:13px;font-weight:700;color:var(--navy);}
 .pipe-ctype{font-size:11px;color:var(--ink3);margin-top:2px;}
 .pipe-camt{font-size:13px;font-weight:700;color:var(--accent);margin-top:5px;}
-
-/* CALENDAR */
 .cal-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:10px;min-width:300px;}
 .cal-dow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);text-align:center;padding:6px 0;}
@@ -128,24 +105,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 .cal-event{background:var(--navy);color:#fff;border-radius:4px;padding:2px 5px;font-size:9px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cal-nav{display:flex;align-items:center;gap:10px;}
 .cal-nav-btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:18px;font-weight:700;}
-
-/* QUOTE */
 .quote-box{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:var(--radius-lg);padding:20px;margin-top:14px;color:#fff;box-shadow:var(--shadow-lg);}
 .quote-total{font-size:32px;font-weight:700;}
 .quote-range{font-size:13px;color:var(--silver);margin-top:2px;}
 .quote-line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:14px;color:rgba(255,255,255,.85);}
 .quote-line:last-child{border:none;font-weight:700;color:#fff;font-size:15px;}
 .quote-line-hd{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--silver);margin:14px 0 6px;}
-
-/* OUTREACH */
 .contact-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:16px;}
 @media(min-width:500px){.contact-grid{grid-template-columns:repeat(2,1fr);}}
 @media(min-width:768px){.contact-grid{grid-template-columns:repeat(3,1fr);}}
 .campaign-row{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:8px;box-shadow:var(--shadow);}
 .cr-name{font-size:14px;font-weight:700;color:var(--navy);flex:1;}
 .cr-stat{font-size:12px;color:var(--ink3);}
-
-/* MODAL */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(10,20,50,.6);z-index:200;align-items:flex-end;justify-content:center;padding:0;}
 @media(min-width:600px){.modal-bg{align-items:center;padding:20px;}}
 .modal-bg.open{display:flex;}
@@ -163,17 +134,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 @media(max-width:400px){.field-row{grid-template-columns:1fr;}}
 .modal-footer{display:flex;gap:10px;margin-top:20px;}
 .modal-footer .btn{flex:1;text-align:center;padding:14px;font-size:15px;}
-
-/* AI */
+.addr-wrap{display:flex;gap:8px;align-items:flex-start;}
+.addr-wrap input{flex:1;}
+.gps-btn{padding:13px 14px;border-radius:var(--radius);border:1.5px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;font-size:18px;flex-shrink:0;transition:all .12s;}
+.gps-btn:active{transform:scale(.95);}
+.suggestions{background:var(--surface);border:1.5px solid var(--accent);border-radius:var(--radius);margin-top:4px;display:none;box-shadow:var(--shadow-lg);overflow:hidden;}
+.suggestion-item{padding:12px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--border);}
+.suggestion-item:last-child{border:none;}
+.suggestion-item:hover{background:var(--navy-light);}
 .ai-box{background:var(--navy-light);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:14px;font-size:13px;line-height:1.75;white-space:pre-wrap;font-family:var(--mono);color:var(--ink);}
 .ai-loading{color:var(--accent);font-style:italic;}
-
-/* SETTINGS */
 .settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:14px;box-shadow:var(--shadow);}
 .settings-card h3{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;}
 .settings-note{font-size:12px;color:var(--ink3);margin-top:8px;line-height:1.6;}
-
-/* TOAST */
+#map{width:100%;height:480px;border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;}
+.map-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}
+.map-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3);}
+.map-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 24px;border-radius:99px;font-size:14px;font-weight:500;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow-lg);}
 @media(min-width:768px){.toast{bottom:24px;}}
 .toast.show{opacity:1;}
@@ -198,13 +175,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 </div>
 
 <div class="desktop-layout">
-
 <div class="sidenav">
   <div class="snav-item active" onclick="nav('dashboard')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</div>
   <div class="snav-item" onclick="nav('customers')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>Customers</div>
   <div class="snav-item" onclick="nav('jobs')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Jobs</div>
   <div class="snav-item" onclick="nav('pipeline')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h14M3 18h10"/></svg>Pipeline</div>
   <div class="snav-item" onclick="nav('calendar')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</div>
+  <div class="snav-item" onclick="nav('map')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Map</div>
   <div class="snav-item" onclick="nav('quote')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Quoting</div>
   <div class="snav-item" onclick="nav('outreach')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Outreach</div>
   <div class="snav-item" onclick="nav('settings')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
@@ -258,6 +235,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
   <div class="cal-wrap"><div class="cal-grid" id="cal-grid"></div></div>
 </div>
 
+<div id="tab-map" style="display:none">
+  <div class="sec-head">
+    <div class="sec-title">Customer map</div>
+    <button class="btn btn-primary btn-sm" onclick="openModal('customer')">+ Add customer</button>
+  </div>
+  <div id="map"></div>
+  <div class="map-legend">
+    <div class="map-legend-item"><div class="map-dot" style="background:#1a7a5c"></div>Has active job</div>
+    <div class="map-legend-item"><div class="map-dot" style="background:#2a7fd4"></div>Customer</div>
+    <div class="map-legend-item"><div class="map-dot" style="background:#c97a1a"></div>Lead only</div>
+  </div>
+  <div id="map-no-key" style="display:none" class="empty">
+    <span class="empty-icon">🗺️</span>
+    Add your Google Maps API key in <strong>Settings</strong> to enable the map view.
+  </div>
+</div>
+
 <div id="tab-quote" style="display:none">
   <div class="sec-head"><div class="sec-title">AI-powered quoting</div></div>
   <div class="card">
@@ -307,6 +301,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
     <p class="settings-note">Get your key at <strong>console.anthropic.com</strong> → API Keys. Add $5–10 in credits to start.</p>
   </div>
   <div class="settings-card">
+    <h3>Google Maps API key</h3>
+    <div class="field"><label>Maps API key</label><input id="maps-key-input" placeholder="AIza..."/></div>
+    <button class="btn btn-primary btn-sm" onclick="saveMapsKey()">Save</button>
+    <p class="settings-note">Enables address autocomplete, GPS location, and the customer map. Get a free key at <strong>console.cloud.google.com</strong> → APIs &amp; Services → Credentials. Enable the <strong>Maps JavaScript API</strong> and <strong>Places API</strong>.</p>
+  </div>
+  <div class="settings-card">
     <h3>Google Calendar</h3>
     <div class="field"><label>OAuth Client ID</label><input id="gcal-client" placeholder="xxxxxx.apps.googleusercontent.com"/></div>
     <button class="btn btn-primary btn-sm" onclick="saveGcal()">Save</button>
@@ -340,28 +340,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <div class="bnav-item active" onclick="nav('dashboard')" id="bn-dashboard">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    Home
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home
   </div>
   <div class="bnav-item" onclick="nav('customers')" id="bn-customers">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
-    Customers
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>Customers
   </div>
-  <div class="bnav-item" onclick="nav('jobs')" id="bn-jobs">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
-    Jobs
+  <div class="bnav-item" onclick="nav('map')" id="bn-map">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Map
   </div>
   <div class="bnav-item" onclick="nav('quote')" id="bn-quote">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    Quote
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Quote
   </div>
   <div class="bnav-item" onclick="toggleMore()" id="bn-more">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-    More
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>More
   </div>
 </div>
 
 <div class="more-menu" id="more-menu">
+  <div class="more-item" onclick="nav('jobs');toggleMore()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Jobs</div>
   <div class="more-item" onclick="nav('pipeline');toggleMore()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h14M3 18h10"/></svg>Pipeline</div>
   <div class="more-item" onclick="nav('calendar');toggleMore()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</div>
   <div class="more-item" onclick="nav('outreach');toggleMore()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Outreach</div>
@@ -375,7 +371,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
   <span class="modal-handle"></span><div class="modal-title">Add customer</div>
   <div class="field-row"><div class="field"><label>Name</label><input id="c-name" placeholder="John Smith"/></div><div class="field"><label>Phone</label><input id="c-phone" type="tel" placeholder="(760) 555-0000"/></div></div>
   <div class="field"><label>Email</label><input id="c-email" type="email" placeholder="john@email.com"/></div>
-  <div class="field"><label>Address</label><input id="c-address" placeholder="123 Oak St, Jacksonville FL 32201"/></div>
+  <div class="field">
+    <label>Address <span style="font-weight:400;color:var(--ink4);font-size:11px">— tap 📍 to use your current location</span></label>
+    <div class="addr-wrap">
+      <input id="c-address" placeholder="123 Oak St, Jacksonville FL 32201" oninput="onAddrInput(this.value)" autocomplete="off"/>
+      <button type="button" class="gps-btn" onclick="useMyLocation()" title="Use my current location">📍</button>
+    </div>
+    <div class="suggestions" id="addr-suggestions"></div>
+  </div>
   <div class="field"><label>Notes</label><textarea id="c-notes" placeholder="Any notes..."></textarea></div>
   <div class="modal-footer"><button class="btn" onclick="closeModal('customer')">Cancel</button><button class="btn btn-primary" onclick="saveCustomer()">Save customer</button></div>
 </div></div>
@@ -433,11 +436,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 <div class="toast" id="toast"></div>
 
 <script>
-let cfg=JSON.parse(localStorage.getItem('hsp_cfg')||'{"apiKey":"","gcalClient":"","sbUrl":"","sbKey":"","coName":"HSP Exterior Cleaning","coContact":"","coPhone":"(760) 442-0183","coEmail":"hspexteriorcleaning@gmail.com"}');
+let cfg=JSON.parse(localStorage.getItem('hsp_cfg')||'{"apiKey":"","mapsKey":"","gcalClient":"","sbUrl":"","sbKey":"","coName":"HSP Exterior Cleaning","coContact":"","coPhone":"(760) 442-0183","coEmail":"hspexteriorcleaning@gmail.com"}');
 let customers=[],jobs=[],contacts=[],campaigns=[],quotes=[];
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 let SB=null,sbInited=false,_lastDraft='',moreOpen=false;
+let gmap=null,autocomplete=null,mapsLoaded=false;
 
+// ── SUPABASE ──
 async function initSB(){
   if(!cfg.sbUrl||!cfg.sbKey)return false;
   if(sbInited)return true;
@@ -446,6 +451,16 @@ async function initSB(){
 async function dbLoad(){
   const ok=await initSB();if(!ok){loadLocal();return;}
   try{
+    // Load settings from cloud first
+    const sRes=await SB.from('settings').select('*').eq('id','main').single();
+    if(sRes.data&&sRes.data.data){
+      const cloudCfg=JSON.parse(sRes.data.data);
+      // Keep sbUrl/sbKey from local so we don't lose connection
+      cfg={...cloudCfg,sbUrl:cfg.sbUrl,sbKey:cfg.sbKey};
+      localStorage.setItem('hsp_cfg',JSON.stringify(cfg));
+      updateBadge();
+      if(cfg.mapsKey&&!mapsLoaded)loadMapsScript();
+    }
     const[c,j,ct,ca,q]=await Promise.all([SB.from('customers').select('*').order('created_at'),SB.from('jobs').select('*').order('created_at'),SB.from('contacts').select('*').order('created_at'),SB.from('campaigns').select('*').order('created_at'),SB.from('quotes').select('*').order('created_at')]);
     customers=c.data||[];
     jobs=(j.data||[]).map(r=>({customerId:r.customer_id,customerName:r.customer_name,type:r.type,desc:r.desc,amount:r.amount||0,status:r.status,date:r.job_date,added:r.added,_id:r.id}));
@@ -461,12 +476,111 @@ async function dbInsert(table,row){
 }
 function loadLocal(){customers=JSON.parse(localStorage.getItem('hsp_customers')||'[]');jobs=JSON.parse(localStorage.getItem('hsp_jobs')||'[]');contacts=JSON.parse(localStorage.getItem('hsp_contacts')||'[]');campaigns=JSON.parse(localStorage.getItem('hsp_campaigns')||'[]');quotes=JSON.parse(localStorage.getItem('hsp_quotes')||'[]');}
 function saveLocal(){localStorage.setItem('hsp_customers',JSON.stringify(customers));localStorage.setItem('hsp_jobs',JSON.stringify(jobs));localStorage.setItem('hsp_contacts',JSON.stringify(contacts));localStorage.setItem('hsp_campaigns',JSON.stringify(campaigns));localStorage.setItem('hsp_quotes',JSON.stringify(quotes));}
-function saveCfg(){localStorage.setItem('hsp_cfg',JSON.stringify(cfg));}
+function saveCfg(){
+  localStorage.setItem('hsp_cfg',JSON.stringify(cfg));
+  if(SB){SB.from('settings').upsert({id:'main',data:JSON.stringify(cfg)}).then();}
+}
 
+// ── GOOGLE MAPS ──
+function loadMapsScript(){
+  if(mapsLoaded||!cfg.mapsKey)return;
+  mapsLoaded=true;
+  const s=document.createElement('script');
+  s.src=`https://maps.googleapis.com/maps/api/js?key=${cfg.mapsKey}&libraries=places&callback=onMapsReady`;
+  s.async=true;s.defer=true;
+  document.head.appendChild(s);
+}
+window.onMapsReady=function(){
+  initAutocomplete();
+};
+function initAutocomplete(){
+  const input=document.getElementById('c-address');
+  if(!input||!window.google)return;
+  autocomplete=new google.maps.places.Autocomplete(input,{types:['address']});
+  autocomplete.addListener('place_changed',()=>{
+    const place=autocomplete.getPlace();
+    if(place.formatted_address)input.value=place.formatted_address;
+    document.getElementById('addr-suggestions').style.display='none';
+  });
+}
+let acService=null,acToken=null;
+function onAddrInput(val){
+  if(!val||val.length<3||!window.google){return;}
+  if(!acService)acService=new google.maps.places.AutocompleteService();
+  if(!acToken)acToken=new google.maps.places.AutocompleteSessionToken();
+  acService.getPlacePredictions({input:val,sessionToken:acToken,types:['address']},showSuggestions);
+}
+function showSuggestions(predictions,status){
+  const box=document.getElementById('addr-suggestions');
+  if(!predictions||status!==google.maps.places.PlacesServiceStatus.OK){box.style.display='none';return;}
+  box.innerHTML=predictions.slice(0,4).map(p=>`<div class="suggestion-item" onclick="selectSuggestion('${p.description.replace(/'/g,"\\'")}')">${p.description}</div>`).join('');
+  box.style.display='block';
+}
+function selectSuggestion(addr){
+  document.getElementById('c-address').value=addr;
+  document.getElementById('addr-suggestions').style.display='none';
+  acToken=null;
+}
+function useMyLocation(){
+  if(!navigator.geolocation){toast('Location not available on this device');return;}
+  toast('Getting your location...');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude,longitude}=pos.coords;
+    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${cfg.mapsKey}`)
+      .then(r=>r.json()).then(data=>{
+        if(data.results&&data.results[0]){
+          document.getElementById('c-address').value=data.results[0].formatted_address;
+          toast('Location filled in ✓');
+        }
+      }).catch(()=>toast('Could not get address'));
+  },()=>toast('Location permission denied'));
+}
+function renderMap(){
+  const mapDiv=document.getElementById('map');
+  const noKey=document.getElementById('map-no-key');
+  if(!cfg.mapsKey){mapDiv.style.display='none';noKey.style.display='block';return;}
+  mapDiv.style.display='block';noKey.style.display='none';
+  if(!window.google){loadMapsScript();setTimeout(renderMap,1500);return;}
+  if(!gmap){
+    gmap=new google.maps.Map(mapDiv,{
+      center:{lat:30.3322,lng:-81.6557},zoom:11,
+      styles:[{featureType:'all',elementType:'geometry',stylers:[{color:'#e8eef8'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#b8d4f0'}]},{featureType:'road',elementType:'geometry',stylers:[{color:'#ffffff'}]},{featureType:'poi',stylers:[{visibility:'off'}]}]
+    });
+  }
+  // Clear existing markers
+  if(gmap._markers)gmap._markers.forEach(m=>m.setMap(null));
+  gmap._markers=[];
+  const geocoder=new google.maps.Geocoder();
+  const bounds=new google.maps.LatLngBounds();
+  customers.forEach((c,i)=>{
+    if(!c.address)return;
+    geocoder.geocode({address:c.address},function(results,status){
+      if(status!=='OK')return;
+      const pos=results[0].geometry.location;
+      bounds.extend(pos);
+      const hasActive=jobs.some(j=>j.customerId===i&&j.status==='active');
+      const hasJob=jobs.some(j=>j.customerId===i);
+      const color=hasActive?'#1a7a5c':hasJob?'#2a7fd4':'#c97a1a';
+      const marker=new google.maps.Marker({
+        position:pos,map:gmap,title:c.name,
+        icon:{path:google.maps.SymbolPath.CIRCLE,scale:10,fillColor:color,fillOpacity:1,strokeColor:'#fff',strokeWeight:2}
+      });
+      const cj=jobs.filter(j=>j.customerId===i);
+      const info=new google.maps.InfoWindow({content:`<div style="font-family:sans-serif;padding:4px"><strong>${c.name}</strong><br>${c.address||''}<br>${c.phone||''}<br><span style="color:#666;font-size:12px">${cj.length} job${cj.length!==1?'s':''}</span></div>`});
+      marker.addListener('click',()=>info.open(gmap,marker));
+      gmap._markers.push(marker);
+      if(gmap._markers.length>1)gmap.fitBounds(bounds);
+    });
+  });
+  if(customers.length===0)gmap.setCenter({lat:30.3322,lng:-81.6557});
+}
+
+// ── UI HELPERS ──
 function toast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function toggleMore(){moreOpen=!moreOpen;document.getElementById('more-menu').classList.toggle('open',moreOpen);}
 document.addEventListener('click',e=>{if(moreOpen&&!e.target.closest('#bn-more')&&!e.target.closest('#more-menu')){moreOpen=false;document.getElementById('more-menu').classList.remove('open');}});
-function openModal(id){if(id==='job')fillJobCusts();if(id==='quote')fillQuoteCusts();document.getElementById('modal-'+id).classList.add('open');document.body.style.overflow='hidden';}
+document.addEventListener('click',e=>{if(!e.target.closest('#c-address')&&!e.target.closest('#addr-suggestions')){document.getElementById('addr-suggestions').style.display='none';}});
+function openModal(id){if(id==='job')fillJobCusts();if(id==='quote')fillQuoteCusts();document.getElementById('modal-'+id).classList.add('open');document.body.style.overflow='hidden';if(id==='customer'&&cfg.mapsKey&&window.google)setTimeout(initAutocomplete,100);}
 function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');document.body.style.overflow='';}
 document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg){closeModal(bg.id.replace('modal-',''));}}));
 function badgeCls(s){return{lead:'b-lead',quoted:'b-quoted',active:'b-active',done:'b-done'}[s]||'b-lead';}
@@ -475,17 +589,19 @@ function nav(tab){
   document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none');
   document.getElementById('tab-'+tab).style.display='';
   document.querySelectorAll('.bnav-item').forEach(el=>el.classList.remove('active'));
-  const bnMap={dashboard:'bn-dashboard',customers:'bn-customers',jobs:'bn-jobs',quote:'bn-quote'};
+  const bnMap={dashboard:'bn-dashboard',customers:'bn-customers',map:'bn-map',quote:'bn-quote'};
   if(bnMap[tab])document.getElementById(bnMap[tab])?.classList.add('active');
   else document.getElementById('bn-more')?.classList.add('active');
   document.querySelectorAll('.snav-item').forEach(el=>el.classList.remove('active'));
-  const tabs=['dashboard','customers','jobs','pipeline','calendar','quote','outreach','settings'];
+  const tabs=['dashboard','customers','jobs','pipeline','calendar','map','quote','outreach','settings'];
   const idx=tabs.indexOf(tab);
   if(idx>=0)document.querySelectorAll('.snav-item')[idx]?.classList.add('active');
-  ({dashboard:renderDash,customers:renderCustomers,jobs:renderJobs,pipeline:renderPipeline,calendar:renderCalendar,quote:renderQuotes,outreach:renderOutreach,settings:renderSettings})[tab]?.();
+  const renders={dashboard:renderDash,customers:renderCustomers,jobs:renderJobs,pipeline:renderPipeline,calendar:renderCalendar,map:renderMap,quote:renderQuotes,outreach:renderOutreach,settings:renderSettings};
+  renders[tab]?.();
   window.scrollTo(0,0);
 }
 
+// ── DASHBOARD ──
 function renderDash(){
   document.getElementById('s-active').textContent=jobs.filter(j=>j.status==='active').length;
   document.getElementById('s-cust').textContent=customers.length;
@@ -499,6 +615,7 @@ function renderDash(){
   el.innerHTML=recent.length?recent.map((j,i)=>jobCard(j,jobs.length-1-i)).join(''):`<div class="empty"><span class="empty-icon">🏠</span>No jobs yet — add your first customer to get started.</div>`;
 }
 
+// ── CUSTOMERS ──
 async function saveCustomer(){
   const name=document.getElementById('c-name').value.trim();if(!name)return;
   const c={name,phone:document.getElementById('c-phone').value,email:document.getElementById('c-email').value,address:document.getElementById('c-address').value,notes:document.getElementById('c-notes').value,added:new Date().toLocaleDateString()};
@@ -511,10 +628,12 @@ function renderCustomers(){
   if(!customers.length){el.innerHTML=`<div class="empty"><span class="empty-icon">👥</span>No customers yet.</div>`;return;}
   el.innerHTML=customers.map((c,i)=>{
     const cj=jobs.filter(j=>j.customerId===i);
-    return`<div class="card"><div class="card-head"><div><div class="card-name">${c.name}</div><div class="card-sub">${[c.phone,c.email].filter(Boolean).join(' · ')}</div><div class="card-sub">${c.address||''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:13px;color:var(--ink3);font-weight:600">${cj.length} job${cj.length!==1?'s':''}</div><div style="font-size:11px;color:var(--ink4)">${c.added}</div></div></div>${c.notes?`<div style="font-size:13px;color:var(--ink3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${c.notes}</div>`:''}<div class="card-foot"><button class="btn btn-sm" onclick="draftFollowUp(${i})">Draft email</button><button class="btn btn-primary btn-sm" onclick="addJobFor(${i})">+ Add job</button></div></div>`;
+    return`<div class="card"><div class="card-head"><div><div class="card-name">${c.name}</div><div class="card-sub">${[c.phone,c.email].filter(Boolean).join(' · ')}</div><div class="card-sub">${c.address||''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:13px;color:var(--ink3);font-weight:600">${cj.length} job${cj.length!==1?'s':''}</div><div style="font-size:11px;color:var(--ink4)">${c.added}</div></div></div>${c.notes?`<div style="font-size:13px;color:var(--ink3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${c.notes}</div>`:''}<div class="card-foot"><button class="btn btn-sm" onclick="draftFollowUp(${i})">Draft email</button><button class="btn btn-sm" onclick="openInMaps('${(c.address||'').replace(/'/g,"\\'")}')">Open in Maps</button><button class="btn btn-primary btn-sm" onclick="addJobFor(${i})">+ Add job</button></div></div>`;
   }).join('');
 }
+function openInMaps(addr){if(!addr)return;window.open(`https://maps.google.com/?q=${encodeURIComponent(addr)}`,'_blank');}
 
+// ── JOBS ──
 function fillJobCusts(){const sel=document.getElementById('j-cust');sel.innerHTML='<option value="">Select customer...</option>'+customers.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');}
 function addJobFor(ci){openModal('job');setTimeout(()=>{document.getElementById('j-cust').value=ci;},60);}
 async function saveJob(){
@@ -535,6 +654,7 @@ function renderJobs(){
 }
 function advJob(i){const order=['lead','quoted','active','done'];const cur=order.indexOf(jobs[i].status);if(cur<order.length-1){jobs[i].status=order[cur+1];saveLocal();renderJobs();renderPipeline();renderDash();toast('Status updated ✓');}}
 
+// ── PIPELINE ──
 function renderPipeline(){
   ['lead','quoted','active','done'].forEach(s=>{
     const el=document.getElementById('pp-'+s),cnt=document.getElementById('pc-'+s),f=jobs.filter(j=>j.status===s);
@@ -543,6 +663,7 @@ function renderPipeline(){
   });
 }
 
+// ── CALENDAR ──
 function calMove(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
 function renderCalendar(){
   const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -563,6 +684,7 @@ function renderCalendar(){
   document.getElementById('cal-grid').innerHTML=html;
 }
 
+// ── GOOGLE CALENDAR ──
 function addToGCal(job){
   const title=encodeURIComponent(`HSP: ${job.type} — ${job.customerName}`);
   const details=encodeURIComponent(`Service: ${job.type}\nCustomer: ${job.customerName}\nEstimate: $${job.amount}\nNotes: ${job.desc||''}\n\nHSP Exterior Cleaning\n${cfg.coPhone}\n${cfg.coEmail}`);
@@ -570,6 +692,7 @@ function addToGCal(job){
   window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${d}/${d}&details=${details}`,'_blank');
 }
 
+// ── QUOTING ──
 function fillQuoteCusts(){const sel=document.getElementById('q-cust');sel.innerHTML='<option value="">None</option>'+customers.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');}
 async function generateQuote(){
   const type=document.getElementById('q-type').value,state=document.getElementById('q-state').value,size=document.getElementById('q-size').value,prop=document.getElementById('q-prop').value,notes=document.getElementById('q-notes').value;
@@ -597,6 +720,7 @@ function renderQuotes(){
   el.innerHTML=[...quotes].reverse().map(q=>`<div class="card"><div class="card-head"><div><div class="card-name">${q.type}${q.customerName?' — '+q.customerName:''}</div><div class="card-sub">${q.state}${q.size?' · '+q.size:''}${q.date?' · '+q.date:''}</div></div><div style="font-size:18px;font-weight:700;color:var(--accent);flex-shrink:0">$${Math.round(q.totalLow||0).toLocaleString()}–$${Math.round(q.totalHigh||0).toLocaleString()}</div></div></div>`).join('');
 }
 
+// ── OUTREACH ──
 async function saveContact(){
   const name=document.getElementById('ct-name').value.trim();if(!name)return;
   const c={name,phone:document.getElementById('ct-phone').value,email:document.getElementById('ct-email').value,address:document.getElementById('ct-address').value,source:document.getElementById('ct-source').value,status:'new',added:new Date().toLocaleDateString()};
@@ -612,7 +736,7 @@ async function draftCampaign(){
   const type=document.getElementById('camp-type').value,offer=document.getElementById('camp-offer').value,btn=document.getElementById('draft-btn');
   btn.disabled=true;btn.textContent='Drafting...';
   document.getElementById('campaign-draft').innerHTML='<div class="ai-box"><span class="ai-loading">Writing your email...</span></div>';
-  const prompt=`Write a short professional cold outreach email for ${cfg.coName}. Phone: ${cfg.coPhone}. Email: ${cfg.coEmail}. Service: ${type}. ${offer?'Offer: '+offer+'.':''} Friendly, brief (3 short paragraphs), mention free estimate, clear call to action with phone number. Include subject line. Sign off from the HSP team.`;
+  const prompt=`Write a short professional cold outreach email for ${cfg.coName}. Phone: ${cfg.coPhone}. Email: ${cfg.coEmail}. Service: ${type}. ${offer?'Offer: '+offer+'.':''} Friendly, brief (3 short paragraphs), mention free estimate, clear call to action. Include subject line. Sign off from the HSP team.`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();_lastDraft=data.content?.map(b=>b.text||'').join('');
@@ -633,6 +757,7 @@ function renderOutreach(){
   cl.innerHTML=campaigns.length?campaigns.map(c=>`<div class="campaign-row"><div><div class="cr-name">${c.name}</div><div class="cr-stat">${c.type} · ${c.date}</div></div><div style="text-align:right"><div style="font-size:16px;font-weight:700;color:var(--navy)">${c.sent} sent</div><div class="cr-stat">${c.opened} opened · ${c.replied} replied</div></div></div>`).join(''):`<div class="empty">No campaigns yet.</div>`;
 }
 
+// ── AI EMAILS ──
 async function draftFollowUp(ci){
   const c=customers[ci];if(!cfg.apiKey){toast('Set your API key in Settings first');return;}
   document.getElementById('email-title').textContent='Email — '+c.name;
@@ -660,12 +785,15 @@ async function draftJobEmail(i){
 }
 function copyDraft(){if(_lastDraft)navigator.clipboard.writeText(_lastDraft).then(()=>toast('Copied ✓'));}
 
+// ── SETTINGS ──
 function saveApiKey(){cfg.apiKey=document.getElementById('api-key-input').value.trim();saveCfg();updateBadge();toast('API key saved ✓');}
+function saveMapsKey(){cfg.mapsKey=document.getElementById('maps-key-input').value.trim();saveCfg();mapsLoaded=false;gmap=null;toast('Maps key saved ✓ — go to Map tab to test');}
 function saveGcal(){cfg.gcalClient=document.getElementById('gcal-client').value.trim();saveCfg();toast('Saved ✓');}
 async function saveSupabase(){cfg.sbUrl=document.getElementById('sb-url').value.trim();cfg.sbKey=document.getElementById('sb-key').value.trim();saveCfg();sbInited=false;SB=null;toast('Connecting...');await dbLoad();renderDash();}
 function saveCompany(){cfg.coName=document.getElementById('co-name').value;cfg.coContact=document.getElementById('co-contact').value;cfg.coPhone=document.getElementById('co-phone').value;cfg.coEmail=document.getElementById('co-email').value;saveCfg();toast('Saved ✓');}
 function renderSettings(){
   if(cfg.apiKey)document.getElementById('api-key-input').value=cfg.apiKey;
+  if(cfg.mapsKey)document.getElementById('maps-key-input').value=cfg.mapsKey;
   if(cfg.gcalClient)document.getElementById('gcal-client').value=cfg.gcalClient;
   if(cfg.sbUrl)document.getElementById('sb-url').value=cfg.sbUrl;
   if(cfg.sbKey)document.getElementById('sb-key').value=cfg.sbKey;
@@ -676,7 +804,9 @@ function renderSettings(){
 }
 function updateBadge(){const b=document.getElementById('api-badge');if(cfg.apiKey){b.textContent='AI: active';b.classList.add('set');}else{b.textContent='AI: not set';b.classList.remove('set');}}
 
+// ── INIT ──
 updateBadge();
+if(cfg.mapsKey)loadMapsScript();
 dbLoad().then(()=>renderDash());
 renderCalendar();
 </script>
