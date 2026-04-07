@@ -322,6 +322,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
     <p class="settings-note">Enables address autocomplete, GPS location, and the customer map. Get a free key at <strong>console.cloud.google.com</strong> → APIs &amp; Services → Credentials. Enable the <strong>Maps JavaScript API</strong> and <strong>Places API</strong>.</p>
   </div>
   <div class="settings-card">
+    <h3>Gmail sending</h3>
+    <div class="field"><label>Gmail OAuth Client ID</label><input id="gmail-client-id" placeholder="xxxxxx.apps.googleusercontent.com"/></div>
+    <button class="btn btn-primary btn-sm" onclick="saveGmailSettings()">Save</button>
+    <p class="settings-note">Uses the same Google Cloud project as Calendar. Enable the <strong>Gmail API</strong> in Google Cloud Console → APIs & Services → Library, then paste your OAuth Client ID here.</p>
+  </div>
+  <div class="settings-card">
     <h3>Google Calendar</h3>
     <div class="field"><label>OAuth Client ID</label><input id="gcal-client" placeholder="xxxxxx.apps.googleusercontent.com"/></div>
     <button class="btn btn-primary btn-sm" onclick="saveGcal()">Save</button>
@@ -453,7 +459,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 <div class="toast" id="toast"></div>
 
 <script>
-let cfg=JSON.parse(localStorage.getItem('hsp_cfg')||'{"apiKey":"","mapsKey":"","gcalClient":"","sbUrl":"","sbKey":"","coName":"HSP Exterior Cleaning","coContact":"","coPhone":"(760) 442-0183","coEmail":"hspexteriorcleaning@gmail.com"}');
+let cfg=JSON.parse(localStorage.getItem('hsp_cfg')||'{"apiKey":"","mapsKey":"","gcalClient":"","gmailClient":"","sbUrl":"","sbKey":"","coName":"HSP Exterior Cleaning","coContact":"","coPhone":"(760) 442-0183","coEmail":"hspexteriorcleaning@gmail.com"}');
 let customers=[],jobs=[],contacts=[],campaigns=[],quotes=[],invoices=[];
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 let SB=null,sbInited=false,_lastDraft='',moreOpen=false;
@@ -808,12 +814,14 @@ function copyDraft(){if(_lastDraft)navigator.clipboard.writeText(_lastDraft).the
 // ── SETTINGS ──
 function saveApiKey(){cfg.apiKey=document.getElementById('api-key-input').value.trim();saveCfg();updateBadge();toast('API key saved ✓');}
 function saveMapsKey(){cfg.mapsKey=document.getElementById('maps-key-input').value.trim();saveCfg();mapsLoaded=false;gmap=null;toast('Maps key saved ✓ — go to Map tab to test');}
+function saveGmailSettings(){cfg.gmailClient=document.getElementById('gmail-client-id').value.trim();saveCfg();toast('Gmail settings saved ✓');}
 function saveGcal(){cfg.gcalClient=document.getElementById('gcal-client').value.trim();saveCfg();toast('Saved ✓');}
 async function saveSupabase(){cfg.sbUrl=document.getElementById('sb-url').value.trim();cfg.sbKey=document.getElementById('sb-key').value.trim();saveCfg();sbInited=false;SB=null;toast('Connecting...');await dbLoad();renderDash();}
 function saveCompany(){cfg.coName=document.getElementById('co-name').value;cfg.coContact=document.getElementById('co-contact').value;cfg.coPhone=document.getElementById('co-phone').value;cfg.coEmail=document.getElementById('co-email').value;saveCfg();toast('Saved ✓');}
 function renderSettings(){
   if(cfg.apiKey)document.getElementById('api-key-input').value=cfg.apiKey;
   if(cfg.mapsKey)document.getElementById('maps-key-input').value=cfg.mapsKey;
+  if(cfg.gmailClient)document.getElementById('gmail-client-id').value=cfg.gmailClient;
   if(cfg.gcalClient)document.getElementById('gcal-client').value=cfg.gcalClient;
   if(cfg.sbUrl)document.getElementById('sb-url').value=cfg.sbUrl;
   if(cfg.sbKey)document.getElementById('sb-key').value=cfg.sbKey;
@@ -1064,6 +1072,135 @@ function copyDocText() {
   navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard ✓'));
 }
 
+function deleteDoc(i) {
+  if (!confirm('Delete this ' + invoices[i].docType + '? This cannot be undone.')) return;
+  invoices.splice(i, 1);
+  saveLocal();
+  if (SB) SB.from('invoices').delete().eq('doc_number', invoices[i]?.docNumber || '').then();
+  renderInvoices();
+  toast('Deleted ✓');
+}
+
+function buildDocTextMessage(doc) {
+  const isEst = doc.docType === 'estimate';
+  const total = doc.total.toFixed(2);
+  let msg = `Hi ${doc.customerName.split(' ')[0]}! Here is your ${isEst ? 'estimate' : 'invoice'} from HSP Exterior Cleaning.\n\n`;
+  msg += `#${doc.docNumber} — $${total}\n\n`;
+  msg += `Services:\n`;
+  doc.lineItems.forEach(l => { msg += `• ${l.name}: $${l.amount.toFixed(2)}\n`; });
+  msg += `\nTotal: $${total}\n\n`;
+  if (!isEst && doc.stripeUrl) msg += `Pay online: ${doc.stripeUrl}\n\n`;
+  msg += `Payment: Zelle (760) 442-0183 | Venmo @hspexteriorcleaning | Check: HSP Pressure Washing\n\n`;
+  if (isEst) msg += `To approve, reply with your full name.\n\n`;
+  msg += `"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters." — Colossians 3:23\n\n`;
+  msg += `Questions? Call/text (760) 442-0183`;
+  return msg;
+}
+
+function sendDocText(i) {
+  const doc = invoices[i];
+  const phone = doc.customerPhone ? doc.customerPhone.replace(/\D/g,'') : '';
+  const msg = encodeURIComponent(buildDocTextMessage(doc));
+  if (phone) {
+    window.open(`sms:${phone}&body=${msg}`, '_blank');
+  } else {
+    window.open(`sms:&body=${msg}`, '_blank');
+    toast('No phone number on file — enter it manually');
+  }
+}
+
+async function sendDocEmail(i) {
+  const doc = invoices[i];
+  const isEst = doc.docType === 'estimate';
+  const subject = encodeURIComponent(`${isEst ? 'Estimate' : 'Invoice'} #${doc.docNumber} from HSP Exterior Cleaning — $${doc.total.toFixed(2)}`);
+  
+  // Try Gmail API first if configured
+  if (cfg.gmailClient) {
+    await sendViaGmailAPI(doc, subject);
+    return;
+  }
+  
+  // Fallback to mailto
+  const body = encodeURIComponent(buildDocTextMessage(doc));
+  const email = doc.customerEmail || '';
+  window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+}
+
+async function sendViaGmailAPI(doc, encodedSubject) {
+  const isEst = doc.docType === 'estimate';
+  try {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: cfg.gmailClient,
+      scope: 'https://www.googleapis.com/auth/gmail.send',
+      callback: async (resp) => {
+        if (resp.error) { toast('Gmail auth failed'); return; }
+        const emailBody = buildGmailHtml(doc);
+        const to = doc.customerEmail || '';
+        if (!to) { toast('No email on file for this customer'); return; }
+        const subject = decodeURIComponent(encodedSubject);
+        const raw = btoa(unescape(encodeURIComponent(
+          `From: HSP Exterior Cleaning <${cfg.coEmail}>
+To: ${to}
+Subject: ${subject}
+Content-Type: text/html; charset=utf-8
+
+${emailBody}`
+        ))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+        try {
+          const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + resp.access_token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ raw })
+          });
+          if (res.ok) { toast('Email sent ✓'); }
+          else { toast('Failed to send — check Gmail API setup'); }
+        } catch(e) { toast('Error: ' + e.message); }
+      }
+    });
+    tokenClient.requestAccessToken();
+  } catch(e) {
+    toast('Gmail API not loaded — falling back to mailto');
+    const body = encodeURIComponent(buildDocTextMessage(doc));
+    window.open(`mailto:${doc.customerEmail||''}?subject=${encodedSubject}&body=${body}`, '_blank');
+  }
+}
+
+function buildGmailHtml(doc) {
+  const isEst = doc.docType === 'estimate';
+  const total = doc.total.toFixed(2);
+  const itemsHtml = doc.lineItems.map(l => `<tr><td style="padding:10px;border-bottom:1px solid #e8eef8;font-size:14px">${l.name}</td><td style="padding:10px;border-bottom:1px solid #e8eef8;text-align:right;font-weight:600;font-size:14px">$${l.amount.toFixed(2)}</td></tr>`).join('');
+  const stripeHtml = (!isEst && doc.stripeUrl) ? `<div style="background:#e8f5f0;border-radius:8px;padding:16px;margin:16px 0;text-align:center"><p style="color:#1a7a5c;font-weight:600;margin-bottom:8px">Pay securely online:</p><a href="${doc.stripeUrl}" style="background:#635bff;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">Pay $${total} now</a></div>` : '';
+  return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+    <div style="background:#0f1e3c;padding:24px;border-radius:8px 8px 0 0">
+      <h2 style="color:#fff;margin:0">HSP Exterior Cleaning</h2>
+      <p style="color:#b8c8d8;margin:4px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:1px">Residential & Commercial</p>
+    </div>
+    <div style="border:1px solid #d0d8e8;border-top:none;border-radius:0 0 8px 8px;padding:24px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+        <div><h3 style="margin:0;color:#0f1e3c">${isEst ? 'Estimate' : 'Invoice'} #${doc.docNumber}</h3><p style="color:#5a6a8a;margin:4px 0 0;font-size:13px">Prepared for: <strong>${doc.customerName}</strong></p></div>
+        <div style="text-align:right"><p style="font-size:24px;font-weight:700;color:#0f1e3c;margin:0">$${total}</p><p style="color:#5a6a8a;font-size:12px;margin:2px 0 0">${isEst ? 'Estimated total' : 'Due upon receipt'}</p></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px"><thead><tr style="background:#f0f4fa"><th style="padding:10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#5a6a8a">Service</th><th style="padding:10px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#5a6a8a">Amount</th></tr></thead><tbody>${itemsHtml}</tbody><tfoot><tr><td style="padding:10px;font-weight:700;font-size:15px;color:#0f1e3c">Total</td><td style="padding:10px;text-align:right;font-weight:700;font-size:15px;color:#0f1e3c">$${total}</td></tr></tfoot></table>
+      ${stripeHtml}
+      <div style="background:#f0f4fa;border-radius:8px;padding:14px;margin-bottom:14px">
+        <p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#5a6a8a;margin:0 0 8px">Payment methods</p>
+        <p style="font-size:13px;color:#3a4a6a;line-height:1.7;margin:0"><strong>Zelle:</strong> (760) 442-0183<br><strong>Venmo:</strong> @hspexteriorcleaning<br><strong>Check:</strong> Payable to HSP Pressure Washing<br><strong>Cash:</strong> Accepted in person</p>
+      </div>
+      ${isEst ? `<div style="background:#fdf9f0;border:1px solid #f0d5a0;border-radius:8px;padding:14px;margin-bottom:14px"><p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#92400e;margin:0 0 8px">To approve this estimate</p><p style="font-size:13px;color:#7a4a00;margin:0">Please reply with your <strong>full legal name</strong> to approve. Your reply constitutes your electronic signature and confirms agreement to all services, pricing, terms, and the risk acknowledgment (available upon request).</p></div>` : ''}
+      <p style="text-align:center;font-style:italic;color:#5a6a8a;font-size:12px;border-top:1px solid #d0d8e8;padding-top:14px;margin-top:14px">"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters." — Colossians 3:23</p>
+      <p style="text-align:center;font-size:12px;color:#5a6a8a">(760) 442-0183 | hspexteriorcleaning@gmail.com</p>
+    </div>
+  </body></html>`;
+}
+
 function renderInvoices() {
   const el = document.getElementById('invoice-list');
   if (!invoices.length) { el.innerHTML = '<div class="empty"><span class="empty-icon">📄</span>No invoices or estimates yet.</div>'; return; }
@@ -1087,8 +1224,11 @@ function renderInvoices() {
       <div class="card-foot">
         <button class="btn btn-sm" onclick="event.stopPropagation();previewDoc(${i})">Preview</button>
         <button class="btn btn-sm" onclick="event.stopPropagation();copyDocText();currentDocIndex=${i}">Copy text</button>
+        <button class="btn btn-sm" onclick="event.stopPropagation();sendDocText(${i})">Text</button>
+        <button class="btn btn-sm" onclick="event.stopPropagation();sendDocEmail(${i})">Email</button>
         ${!doc.paid && !isEst ? `<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();currentDocIndex=${i};generateStripeForDoc()">Payment link</button>` : ''}
         ${isEst ? `<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();convertToInvoice(${i})">Convert to invoice</button>` : ''}
+        ${!doc.paid ? `<button class="btn btn-sm" style="color:var(--red,#c0392b);border-color:var(--red,#c0392b)" onclick="event.stopPropagation();deleteDoc(${i})">Delete</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1237,7 +1377,9 @@ renderCalendar();
   <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
     <button class="btn" onclick="closeModal('doc-preview')">Close</button>
     <button class="btn btn-sm" onclick="copyDocText()">Copy text</button>
-    <button class="btn btn-sm btn-primary" onclick="generateStripeForDoc()">Get payment link</button>
+    <button class="btn btn-sm" onclick="sendDocText(currentDocIndex)">Send text</button>
+    <button class="btn btn-sm" onclick="sendDocEmail(currentDocIndex)">Send email</button>
+    <button class="btn btn-sm btn-primary" onclick="generateStripeForDoc()">Payment link</button>
   </div>
 </div></div>
 
