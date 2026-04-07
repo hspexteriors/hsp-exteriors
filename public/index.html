@@ -6,6 +6,8 @@
 <title>HSP Exterior Cleaning</title>
 <link rel="manifest" href="/manifest.json"/>
 <meta name="theme-color" content="#0f1e3c"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<style>html,body{background:#0f1e3c;}body{background:#f0f4fa;}</style>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <link rel="apple-touch-icon" href="/icon.png"/>
@@ -28,8 +30,8 @@
 }
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;min-height:100vh;min-height:100dvh;}
 .shell{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
-.topbar{background:var(--navy);padding:0 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3);min-height:60px;}
-.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.topbar{background:#0f1e3c;padding:env(safe-area-inset-top,0px) 16px 0;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3);min-height:calc(60px + env(safe-area-inset-top,0px));}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;padding-top:env(safe-area-inset-top,0px);}
 .brand img{height:40px;width:40px;object-fit:contain;border-radius:8px;background:#fff;}
 .brand-text{display:flex;flex-direction:column;line-height:1.1;}
 .brand-name{font-size:14px;font-weight:700;color:#fff;letter-spacing:-.2px;}
@@ -47,12 +49,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
   .snav-item svg{width:16px;height:16px;flex-shrink:0;}
 }
 .main-content{flex:1;overflow-y:auto;}
-.bottom-nav{background:var(--navy);border-top:1px solid var(--navy2);display:flex;position:sticky;bottom:0;z-index:100;box-shadow:0 -2px 16px rgba(0,0,0,.2);}
+.bottom-nav{background:#0f1e3c;border-top:1px solid #1a2f57;display:flex;position:sticky;bottom:0;z-index:100;box-shadow:0 -2px 16px rgba(0,0,0,.2);padding-bottom:env(safe-area-inset-bottom,0px);}
 @media(min-width:768px){.bottom-nav{display:none;}}
-.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;cursor:pointer;color:var(--silver);font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;gap:4px;border-top:2px solid transparent;transition:all .15s;min-height:58px;}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;cursor:pointer;color:#b8c8d8;font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;gap:4px;border-top:2px solid transparent;transition:all .15s;min-height:58px;}
 .bnav-item.active{color:#fff;border-top-color:var(--accent);}
 .bnav-item svg{width:22px;height:22px;flex-shrink:0;}
-.more-menu{display:none;position:fixed;bottom:58px;left:0;right:0;background:var(--navy);border-top:1px solid var(--navy2);z-index:99;padding:8px 0;}
+.more-menu{display:none;position:fixed;bottom:calc(58px + env(safe-area-inset-bottom,0px));left:0;right:0;background:#0f1e3c;border-top:1px solid #1a2f57;z-index:99;padding:8px 0;}
 .more-menu.open{display:block;}
 .more-item{display:flex;align-items:center;gap:14px;padding:15px 20px;color:var(--silver);font-size:15px;font-weight:500;cursor:pointer;}
 .more-item.active,.more-item:hover{color:#fff;}
@@ -184,6 +186,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
   <div class="snav-item" onclick="nav('map')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Map</div>
   <div class="snav-item" onclick="nav('quote')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Quoting</div>
   <div class="snav-item" onclick="nav('outreach')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Outreach</div>
+  <div class="snav-item" onclick="openStandalonePayment()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Payment</div>
   <div class="snav-item" onclick="nav('settings')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
 </div>
 
@@ -361,6 +364,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
   <div class="more-item" onclick="nav('pipeline');toggleMore()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h14M3 18h10"/></svg>Pipeline</div>
   <div class="more-item" onclick="nav('calendar');toggleMore()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</div>
   <div class="more-item" onclick="nav('outreach');toggleMore()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Outreach</div>
+  <div class="more-item" onclick="openStandalonePayment();toggleMore()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Request payment</div>
   <div class="more-item" onclick="nav('settings');toggleMore()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
 </div>
 
@@ -645,7 +649,8 @@ async function saveJob(){
   toast('Job saved ✓');renderJobs();renderPipeline();renderDash();
 }
 function jobCard(j,i){
-  return`<div class="card"><div class="card-head"><div style="flex:1"><div class="card-name">${j.customerName}</div><div class="card-sub" style="font-weight:600;color:var(--navy2)">${j.type}</div><div class="card-sub">${j.desc||''}</div><div class="card-sub">${j.date?'📅 '+j.date:'No date set'}</div></div><div style="text-align:right;flex-shrink:0"><span class="badge ${badgeCls(j.status)}">${j.status}</span><div style="font-size:20px;font-weight:700;color:var(--accent);margin-top:8px">$${Math.round(j.amount||0).toLocaleString()}</div></div></div><div class="card-foot"><button class="btn btn-sm" onclick="advJob(${i})">Advance</button><button class="btn btn-sm" onclick="draftJobEmail(${i})">Draft email</button></div></div>`;
+  const paidBadge=j.paid?'<span class="badge b-done" style="background:#d1fae5;color:#065f46;margin-left:6px">Paid</span>':''; 
+  return`<div class="card"><div class="card-head"><div style="flex:1"><div class="card-name">${j.customerName}</div><div class="card-sub" style="font-weight:600;color:var(--navy2)">${j.type}</div><div class="card-sub">${j.desc||''}</div><div class="card-sub">${j.date?'📅 '+j.date:'No date set'}</div></div><div style="text-align:right;flex-shrink:0"><span class="badge ${badgeCls(j.status)}">${j.status}</span>${paidBadge}<div style="font-size:20px;font-weight:700;color:var(--accent);margin-top:8px">$${Math.round(j.amount||0).toLocaleString()}</div></div></div><div class="card-foot"><button class="btn btn-sm" onclick="advJob(${i})">Advance</button><button class="btn btn-sm" onclick="draftJobEmail(${i})">Draft email</button>${!j.paid?'<button class="btn btn-sm btn-primary" onclick="openPayment('+(i)+')">Request payment</button>':''}</div></div>`;
 }
 function renderJobs(){
   const el=document.getElementById('job-list');
@@ -804,6 +809,88 @@ function renderSettings(){
 }
 function updateBadge(){const b=document.getElementById('api-badge');if(cfg.apiKey){b.textContent='AI: active';b.classList.add('set');}else{b.textContent='AI: not set';b.classList.remove('set');}}
 
+
+// ── STRIPE PAYMENTS ──
+function openPayment(i){
+  const j=jobs[i];
+  const c=customers[j.customerId]||{};
+  document.getElementById('pay-customer').value=j.customerName||'';
+  document.getElementById('pay-email').value=c.email||'';
+  document.getElementById('pay-job').value=j.type||'';
+  document.getElementById('pay-amount').value=j.amount||'';
+  document.getElementById('pay-desc').value=j.type+' — '+new Date().toLocaleDateString();
+  document.getElementById('pay-job-id').textContent=j._id||i;
+  document.getElementById('pay-result').innerHTML='';
+  openModal('payment');
+}
+function openStandalonePayment(){
+  document.getElementById('pay-customer').value='';
+  document.getElementById('pay-customer').removeAttribute('readonly');
+  document.getElementById('pay-email').value='';
+  document.getElementById('pay-job').value='';
+  document.getElementById('pay-job').removeAttribute('readonly');
+  document.getElementById('pay-amount').value='';
+  document.getElementById('pay-desc').value='';
+  document.getElementById('pay-job-id').textContent='';
+  document.getElementById('pay-result').innerHTML='';
+  openModal('payment');
+}
+async function createPaymentLink(){
+  const amount=parseFloat(document.getElementById('pay-amount').value);
+  if(!amount||amount<=0){toast('Enter a valid amount');return;}
+  const btn=document.getElementById('pay-btn');
+  btn.disabled=true;btn.textContent='Generating...';
+  document.getElementById('pay-result').innerHTML='<div class="ai-box"><span class="ai-loading">Creating payment link...</span></div>';
+  try{
+    const res=await fetch('/api/create-payment',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        amount,
+        customerName:document.getElementById('pay-customer').value,
+        customerEmail:document.getElementById('pay-email').value,
+        jobType:document.getElementById('pay-job').value,
+        jobId:document.getElementById('pay-job-id').textContent,
+        description:document.getElementById('pay-desc').value,
+      })
+    });
+    const data=await res.json();
+    if(data.url){
+      document.getElementById('pay-result').innerHTML=`
+        <div style="background:var(--green-light);border:1px solid #b8dfcf;border-radius:var(--radius);padding:14px;margin-top:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px">Payment link ready!</div>
+          <div style="font-size:12px;color:var(--ink2);word-break:break-all;margin-bottom:10px">${data.url}</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm btn-primary" onclick="navigator.clipboard.writeText('${data.url}').then(()=>toast('Link copied ✓'))">Copy link</button>
+            <button class="btn btn-sm" onclick="window.open('${data.url}','_blank')">Open link</button>
+          </div>
+        </div>`;
+    } else {
+      document.getElementById('pay-result').innerHTML=`<div class="ai-box" style="background:var(--amber-light)">Error: ${data.error||'Could not create payment link'}</div>`;
+    }
+  }catch(e){
+    document.getElementById('pay-result').innerHTML=`<div class="ai-box" style="background:var(--amber-light)">Error: ${e.message}</div>`;
+  }
+  btn.disabled=false;btn.textContent='Generate payment link';
+}
+// Check for payment success on load
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('payment')==='success'){
+    const jobId=params.get('jobId');
+    toast('Payment received successfully ✓');
+    if(jobId){
+      const ji=jobs.findIndex(j=>j._id===jobId||String(jobs.indexOf(j))===jobId);
+      if(ji>=0){jobs[ji].status='done';jobs[ji].paid=true;saveLocal();renderDash();}
+    }
+    window.history.replaceState({},'','/');
+  }
+  if(params.get('payment')==='cancelled'){
+    toast('Payment was cancelled');
+    window.history.replaceState({},'','/');
+  }
+})();
+
 // ── INIT ──
 updateBadge();
 if(cfg.mapsKey)loadMapsScript();
@@ -812,3 +899,19 @@ renderCalendar();
 </script>
 </body>
 </html>
+<!-- STRIPE PAYMENT MODAL - injected -->
+<div class="modal-bg" id="modal-payment"><div class="modal">
+  <span class="modal-handle"></span>
+  <div class="modal-title">Request payment</div>
+  <div class="field"><label>Customer name</label><input id="pay-customer" placeholder="John Smith" readonly/></div>
+  <div class="field"><label>Customer email (optional)</label><input id="pay-email" type="email" placeholder="john@email.com"/></div>
+  <div class="field"><label>Job / service</label><input id="pay-job" placeholder="Pressure washing" readonly/></div>
+  <div class="field"><label>Amount ($)</label><input id="pay-amount" type="number" inputmode="decimal" placeholder="0"/></div>
+  <div class="field"><label>Description</label><input id="pay-desc" placeholder="Services rendered — April 2026"/></div>
+  <div id="pay-job-id" style="display:none"></div>
+  <div id="pay-result" style="margin-top:8px"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('payment')">Cancel</button>
+    <button class="btn btn-primary" id="pay-btn" onclick="createPaymentLink()">Generate payment link</button>
+  </div>
+</div></div>
