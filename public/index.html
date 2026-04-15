@@ -209,6 +209,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 
 <div id="tab-customers" style="display:none">
   <div class="sec-head"><div class="sec-title">Customers</div><button class="btn btn-primary btn-sm" onclick="openModal('customer')">+ Add customer</button></div>
+  <div style="margin-bottom:14px;position:relative">
+    <input id="cust-search" placeholder="Search customers by name, phone, or address..." oninput="renderCustomers()" style="width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:15px;background:var(--surface);color:var(--ink);font-family:var(--font);outline:none;"/>
+    <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--ink3)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  </div>
   <div id="cust-list"></div>
 </div>
 
@@ -438,15 +442,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 </div></div>
 
 <div class="modal-bg" id="modal-campaign"><div class="modal">
-  <span class="modal-handle"></span><div class="modal-title">New email campaign</div>
+  <span class="modal-handle"></span><div class="modal-title">New campaign</div>
   <div class="field"><label>Campaign name</label><input id="camp-name" placeholder="Spring pressure washing promo"/></div>
   <div class="field-row">
     <div class="field"><label>Service</label><select id="camp-type"><option>Pressure Washing</option><option>Soft Washing</option><option>Window Cleaning</option><option>Roof Cleaning</option><option>Driveway Cleaning</option></select></div>
-    <div class="field"><label>Target</label><select id="camp-target"><option value="all">All contacts</option><option value="new">New contacts only</option></select></div>
+    <div class="field"><label>Send via</label><select id="camp-method" onchange="toggleCampMethod()"><option value="email">Email</option><option value="text">Text / SMS</option></select></div>
   </div>
+  <div class="field"><label>Target</label><select id="camp-target"><option value="all">All customers</option><option value="contacts">All contacts</option><option value="new">New contacts only</option></select></div>
   <div class="field"><label>Offer / hook</label><input id="camp-offer" placeholder="e.g. Free estimate, 10% off this week"/></div>
-  <button class="btn btn-sm" id="draft-btn" onclick="draftCampaign()">Draft email with AI</button>
+  <button class="btn btn-sm" id="draft-btn" onclick="draftCampaign()">Draft message with AI</button>
   <div id="campaign-draft"></div>
+  <div id="camp-text-section" style="display:none;margin-top:12px">
+    <div style="background:var(--navy-light);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:6px">Customers with phone numbers</div>
+      <div id="camp-phone-list" style="font-size:12px;color:var(--ink2);line-height:1.8"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="sendMassText()">Open Messages with all numbers</button>
+  </div>
   <div class="modal-footer"><button class="btn" onclick="closeModal('campaign')">Cancel</button><button class="btn btn-primary" onclick="saveCampaign()">Save campaign</button></div>
 </div></div>
 
@@ -658,6 +670,18 @@ function renderCustomers(){
 }
 function openInMaps(addr){if(!addr)return;window.open(`https://maps.google.com/?q=${encodeURIComponent(addr)}`,'_blank');}
 
+function deleteCustomer(i){
+  const c=customers[i];
+  if(!confirm(`Delete ${c.name}? This will also remove their ${jobs.filter(j=>j.customerId===i).length} job(s). This cannot be undone.`))return;
+  jobs=jobs.filter(j=>j.customerId!==i);
+  jobs=jobs.map(j=>({...j,customerId:j.customerId>i?j.customerId-1:j.customerId}));
+  customers.splice(i,1);
+  saveLocal();
+  if(SB){SB.from('customers').delete().eq('name',c.name).then();}
+  renderCustomers();renderDash();
+  toast('Customer deleted ✓');
+}
+
 // ── JOBS ──
 function fillJobCusts(){const sel=document.getElementById('j-cust');sel.innerHTML='<option value="">Select customer...</option>'+customers.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');}
 function addJobFor(ci){openModal('job');setTimeout(()=>{document.getElementById('j-cust').value=ci;},60);}
@@ -757,12 +781,51 @@ function importContacts(){
   lines.forEach(line=>{const[name,email,phone,address]=line.split(',').map(s=>s.trim());if(name){contacts.push({name,email:email||'',phone:phone||'',address:address||'',source:'Import',status:'new',added:new Date().toLocaleDateString()});added++;}});
   saveLocal();closeModal('import');document.getElementById('import-csv').value='';toast(`Imported ${added} contacts ✓`);renderOutreach();renderDash();
 }
+function toggleCampMethod(){
+  const method=document.getElementById('camp-method').value;
+  const textSection=document.getElementById('camp-text-section');
+  if(method==='text'){
+    textSection.style.display='block';
+    const target=document.getElementById('camp-target').value;
+    let pool=[];
+    if(target==='all'||target==='contacts'){
+      pool=[...customers.filter(c=>c.phone),...contacts.filter(c=>c.phone)];
+    } else {
+      pool=contacts.filter(c=>c.phone&&c.status==='new');
+    }
+    const phoneList=document.getElementById('camp-phone-list');
+    if(!pool.length){phoneList.innerHTML='<span style="color:var(--amber)">No phone numbers found. Add phone numbers to your customers.</span>';return;}
+    phoneList.innerHTML=pool.map(c=>`<div style="display:flex;justify-content:space-between"><span>${c.name}</span><span style="color:var(--ink3)">${c.phone}</span></div>`).join('');
+  } else {
+    textSection.style.display='none';
+  }
+}
+
+function sendMassText(){
+  const target=document.getElementById('camp-target').value;
+  let pool=[];
+  if(target==='all'||target==='contacts'){
+    pool=[...customers.filter(c=>c.phone),...contacts.filter(c=>c.phone)];
+  } else {
+    pool=contacts.filter(c=>c.phone&&c.status==='new');
+  }
+  if(!pool.length){toast('No phone numbers found');return;}
+  const draft=document.getElementById('campaign-draft');
+  const msg=draft?.querySelector('.ai-box')?.textContent||'Hi! This is HSP Exterior Cleaning. We wanted to reach out about our services. Call or text (760) 442-0183 for a free estimate!';
+  const numbers=pool.map(c=>c.phone.replace(/\D/g,'')).filter(Boolean).join(',');
+  const encoded=encodeURIComponent(msg);
+  window.open(`sms:${numbers}&body=${encoded}`,'_blank');
+  toast(`Opening Messages with ${pool.length} contacts`);
+}
+
 async function draftCampaign(){
   if(!cfg.apiKey){document.getElementById('campaign-draft').innerHTML='<div class="ai-box" style="background:var(--amber-light)">⚠️ Set your API key in Settings first.</div>';return;}
   const type=document.getElementById('camp-type').value,offer=document.getElementById('camp-offer').value,btn=document.getElementById('draft-btn');
+  const method=document.getElementById('camp-method').value;
   btn.disabled=true;btn.textContent='Drafting...';
-  document.getElementById('campaign-draft').innerHTML='<div class="ai-box"><span class="ai-loading">Writing your email...</span></div>';
-  const prompt=`Write a short professional cold outreach email for ${cfg.coName}. Phone: ${cfg.coPhone}. Email: ${cfg.coEmail}. Service: ${type}. ${offer?'Offer: '+offer+'.':''} Friendly, brief (3 short paragraphs), mention free estimate, clear call to action. Include subject line. Sign off from the HSP team.`;
+  document.getElementById('campaign-draft').innerHTML='<div class="ai-box"><span class="ai-loading">Writing your message...</span></div>';
+  const isText=method==='text';
+  const prompt=isText?`Write a short, friendly SMS text message (under 160 characters ideally) for ${cfg.coName}. Service: ${type}. ${offer?'Offer: '+offer+'.':''} Include phone number ${cfg.coPhone}. No subject line. Casual and direct.`:`Write a short professional cold outreach email for ${cfg.coName}. Phone: ${cfg.coPhone}. Email: ${cfg.coEmail}. Service: ${type}. ${offer?'Offer: '+offer+'.':''} Friendly, brief (3 short paragraphs), mention free estimate, clear call to action. Include subject line. Sign off from the HSP team.`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();_lastDraft=data.content?.map(b=>b.text||'').join('');
