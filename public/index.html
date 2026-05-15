@@ -1016,10 +1016,13 @@ function sendDocText(i){
   const doc=invoices[i];
   const phone=doc.customerPhone?doc.customerPhone.replace(/\D/g,''):'';
   const isEst=doc.docType==='estimate';
-  let msg=`Hi ${doc.customerName.split(' ')[0]}! Here is your ${isEst?'estimate':'invoice'} from HSP Exterior Cleaning.\n\n#${doc.docNumber} — $${doc.total.toFixed(2)}\n\n`;
-  doc.lineItems.forEach(l=>{msg+=`• ${l.name}: $${l.amount.toFixed(2)}\n`;});
-  if(!isEst&&doc.stripeUrl)msg+=`\nPay online: ${doc.stripeUrl}\n`;
-  msg+=`\nZelle: (760) 442-0183 | Venmo: @hspexteriorcleaning\n\n"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters." — Colossians 3:23`;
+  const invoiceUrl=`${window.location.origin}/invoice.html?id=${doc.docNumber}`;
+  const firstName=doc.customerName.split(' ')[0];
+  let msg=`Hi ${firstName}! Here is your ${isEst?'estimate':'invoice'} from HSP Exterior Cleaning.\n\n`;
+  msg+=`View your full ${isEst?'estimate':'invoice'} here:\n${invoiceUrl}\n\n`;
+  if(!isEst&&doc.stripeUrl){msg+=`Pay online: ${doc.stripeUrl}\n\n`;}
+  msg+=`Total: $${doc.total.toFixed(2)}\n`;
+  msg+=`\nQuestions? Call or text (760) 442-0183`;
   window.open(`sms:${phone}&body=${encodeURIComponent(msg)}`,'_blank');
 }
 function sendDocEmail(i){

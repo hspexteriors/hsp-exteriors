@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HSP Exterior Cleaning — Invoice</title>
+<meta name="theme-color" content="#0f1e3c"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#f0f4fa;color:#1a1a2e;min-height:100vh;padding:16px;}
+@media(min-width:600px){body{padding:32px 16px;}}
+.doc{background:#fff;border-radius:16px;max-width:640px;margin:0 auto;overflow:hidden;box-shadow:0 4px 24px rgba(15,30,60,0.15);}
+.doc-header{background:#0f1e3c;padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start;}
+.brand-name{color:#fff;font-size:18px;font-weight:700;}
+.brand-sub{color:#b8c8d8;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+.doc-type{text-align:right;}
+.doc-type-label{color:#fff;font-size:22px;font-weight:700;}
+.doc-num{color:#b8c8d8;font-size:12px;margin-top:3px;}
+.badge{display:inline-block;padding:4px 12px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:8px;}
+.badge-est{background:#fdf3e3;color:#92400e;}
+.badge-inv{background:#fee2e2;color:#991b1b;}
+.badge-paid{background:#d1fae5;color:#065f46;}
+.doc-body{padding:24px 28px;}
+.meta-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+.meta-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#5a6a8a;margin-bottom:5px;}
+.meta-value{font-size:13px;color:#1a1a2e;line-height:1.7;}
+.meta-value strong{font-weight:600;}
+.divider{border:none;border-top:0.5px solid #d0d8e8;margin:0 0 20px;}
+.items-table{width:100%;border-collapse:collapse;margin-bottom:18px;}
+.items-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#5a6a8a;padding:8px 10px;border-bottom:1px solid #d0d8e8;text-align:left;}
+.items-table th:last-child{text-align:right;}
+.items-table td{padding:12px 10px;font-size:14px;color:#1a1a2e;border-bottom:0.5px solid #e8eef8;}
+.items-table td:last-child{text-align:right;font-weight:600;}
+.items-table tr:last-child td{border-bottom:none;}
+.totals{display:flex;justify-content:flex-end;margin-bottom:20px;}
+.totals-block{min-width:200px;}
+.total-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#1a1a2e;border-bottom:0.5px solid #e8eef8;}
+.total-row.tax{color:#5a6a8a;}
+.total-row.final{border:none;font-size:16px;font-weight:700;color:#0f1e3c;padding-top:10px;margin-top:4px;}
+.pay-section{background:linear-gradient(135deg,#0f1e3c,#1a2f57);border-radius:12px;padding:20px;margin-bottom:16px;text-align:center;}
+.pay-label{color:#b8c8d8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.pay-amount{color:#fff;font-size:32px;font-weight:700;margin-bottom:16px;}
+.pay-btn{display:inline-block;background:#635bff;color:#fff;font-size:16px;font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;letter-spacing:-.2px;}
+.pay-btn:hover{background:#4f46e0;}
+.sbox{border-radius:8px;padding:14px 16px;margin-bottom:14px;}
+.sbox.amber{background:#fdf9f0;border:0.5px solid #f0d5a0;}
+.sbox.blue{background:#f0f4fa;}
+.sbox.navy{background:#e8eef8;border:0.5px solid #c0cce0;}
+.slabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#5a6a8a;margin-bottom:7px;}
+.slabel.amber{color:#92400e;}
+.stext{font-size:12px;color:#3a4a6a;line-height:1.7;}
+.stext.amber{color:#7a4a00;}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+.pill{background:#e8eef8;color:#0f1e3c;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;}
+.pill.stripe{background:#635bff;color:#fff;}
+.verse{text-align:center;font-size:12px;color:#5a6a8a;font-style:italic;padding:14px 16px;border-top:0.5px solid #d0d8e8;border-bottom:0.5px solid #d0d8e8;margin-bottom:14px;line-height:1.7;}
+.sig-block{border:0.5px solid #d0d8e8;border-radius:8px;padding:14px 16px;margin-bottom:14px;}
+.sig-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:12px;}
+.sig-line{border-bottom:1px solid #1a1a2e;margin-top:18px;margin-bottom:4px;}
+.sig-label{font-size:10px;color:#5a6a8a;}
+.footer{background:#f0f4fa;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.footer-contact{font-size:11px;color:#5a6a8a;line-height:1.6;}
+.footer-thank{font-size:12px;font-weight:600;color:#0f1e3c;}
+.loading{text-align:center;padding:60px 20px;color:#5a6a8a;font-size:15px;}
+.error{text-align:center;padding:60px 20px;color:#c0392b;font-size:15px;}
+</style>
+</head>
+<body>
+<div class="doc" id="doc-container">
+  <div class="loading" id="loading">Loading invoice...</div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://lfdmrvwkabpywfklplco.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_wq5Fqo-sks4bEUVnuL63XA_3NUpJqGo';
+
+async function loadInvoice() {
+  const params = new URLSearchParams(window.location.search);
+  const docNumber = params.get('id');
+  if (!docNumber) { showError('No invoice ID provided.'); return; }
+
+  try {
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const SB = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { data, error } = await SB.from('invoices').select('*').eq('doc_number', docNumber).single();
+    if (error || !data) { showError('Invoice not found.'); return; }
+
+    const doc = {
+      docType: data.doc_type,
+      docNumber: data.doc_number,
+      customerName: data.customer_name,
+      customerAddress: data.customer_address,
+      customerPhone: data.customer_phone,
+      customerEmail: data.customer_email,
+      lineItems: data.line_items || [],
+      subtotal: data.subtotal || 0,
+      total: data.total || 0,
+      status: data.status,
+      notes: data.notes,
+      docDate: data.doc_date,
+      validUntil: data.valid_until,
+      stripeUrl: data.stripe_url,
+      paid: data.paid
+    };
+
+    renderDoc(doc);
+  } catch(e) {
+    showError('Could not load invoice: ' + e.message);
+  }
+}
+
+function showError(msg) {
+  document.getElementById('loading').className = 'error';
+  document.getElementById('loading').textContent = msg;
+}
+
+function renderDoc(doc) {
+  const isEst = doc.docType === 'estimate';
+  const dateStr = doc.docDate ? new Date(doc.docDate).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
+  const validStr = doc.validUntil ? new Date(doc.validUntil).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
+
+  const itemsHtml = (doc.lineItems || []).map(l =>
+    `<tr><td style="font-weight:600">${l.name}</td><td>$${Number(l.amount).toFixed(2)}</td></tr>`
+  ).join('');
+
+  const paySection = !isEst && doc.stripeUrl && !doc.paid ? `
+    <div class="pay-section">
+      <div class="pay-label">Amount due</div>
+      <div class="pay-amount">$${Number(doc.total).toFixed(2)}</div>
+      <a href="${doc.stripeUrl}" class="pay-btn">Pay now securely →</a>
+      <div style="color:#b8c8d8;font-size:11px;margin-top:12px">Powered by Stripe · Your payment is secure</div>
+    </div>` : doc.paid ? `
+    <div style="background:#d1fae5;border-radius:12px;padding:16px;text-align:center;margin-bottom:16px">
+      <div style="font-size:20px;font-weight:700;color:#065f46">✓ Paid — Thank you!</div>
+    </div>` : '';
+
+  const estimateExtras = isEst ? `
+    <div class="sbox amber">
+      <div class="slabel amber">Risk acknowledgment &amp; liability notice</div>
+      <div class="stext amber">By approving this estimate, the client acknowledges that HSP Exterior Cleaning uses high-pressure water equipment and professional-grade cleaning chemicals. While every precaution is taken, the client understands and accepts an inherent risk of property damage including but not limited to damage to paint, siding, roofing materials, landscaping, caulking, windows, and seals. HSP Exterior Cleaning will not be held liable for pre-existing conditions, damage from deteriorated or improperly installed materials, or any incidental or consequential damages from services rendered. By approving, the client confirms they have read, understood, and accepted these terms in full.</div>
+    </div>
+    <div class="sbox blue">
+      <div class="slabel">Notes &amp; terms</div>
+      <div class="stext">This estimate is valid for 14 days from the date above. Final pricing may vary slightly based on actual site conditions. No payment is due until work is completed and approved. HSP Exterior Cleaning is fully insured.</div>
+    </div>
+    <div class="sig-block">
+      <div class="slabel">Client approval &amp; signature</div>
+      <div class="stext">To approve this estimate, please reply with your <strong>full legal name</strong> through the same method this estimate was sent to you (text, email, or other). Your response constitutes your electronic signature and confirms that you have read, understood, and agreed to all services, pricing, terms, and the risk acknowledgment above.</div>
+      <div class="sig-row">
+        <div><div class="sig-line"></div><div class="sig-label">Client full name (printed)</div></div>
+        <div><div class="sig-line"></div><div class="sig-label">Date approved</div></div>
+      </div>
+    </div>` : `
+    <div class="sbox blue">
+      <div class="slabel">Payment instructions</div>
+      <div class="stext">Payment is due upon receipt. Please reference #${doc.docNumber} when sending payment.<br><br>
+        <strong>Zelle:</strong> (760) 442-0183<br>
+        <strong>Venmo:</strong> @hspexteriorcleaning<br>
+        <strong>Check:</strong> Payable to HSP Pressure Washing<br>
+        <strong>Cash:</strong> Accepted in person
+      </div>
+    </div>`;
+
+  const html = `
+    <div class="doc-header">
+      <div><div class="brand-name">HSP Exterior Cleaning</div><div class="brand-sub">Residential &amp; Commercial</div></div>
+      <div class="doc-type">
+        <div class="doc-type-label">${isEst ? 'Estimate' : 'Invoice'}</div>
+        <div class="doc-num">#${doc.docNumber}</div>
+        <span class="badge ${doc.paid ? 'badge-paid' : isEst ? 'badge-est' : 'badge-inv'}">${doc.paid ? 'Paid' : isEst ? 'Pending approval' : 'Payment due'}</span>
+      </div>
+    </div>
+    <div class="doc-body">
+      <div class="meta-row">
+        <div>
+          <div class="meta-label">${isEst ? 'Prepared for' : 'Billed to'}</div>
+          <div class="meta-value"><strong>${doc.customerName}</strong><br>${doc.customerAddress || ''}<br>${doc.customerPhone || ''}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="meta-label">Details</div>
+          <div class="meta-value">
+            <strong>Date:</strong> ${dateStr}<br>
+            ${isEst ? `<strong>Valid until:</strong> ${validStr}` : '<strong>Due:</strong> Upon receipt'}
+          </div>
+        </div>
+      </div>
+      <hr class="divider"/>
+      <table class="items-table">
+        <thead><tr><th style="width:65%">Service description</th><th>Amount</th></tr></thead>
+        <tbody>${itemsHtml}</tbody>
+      </table>
+      <div class="totals">
+        <div class="totals-block">
+          <div class="total-row"><span>Subtotal</span><span>$${Number(doc.subtotal).toFixed(2)}</span></div>
+          <div class="total-row tax"><span>Tax (0%)</span><span>$0.00</span></div>
+          <div class="total-row final"><span>${isEst ? 'Estimated total' : 'Total due'}</span><span>$${Number(doc.total).toFixed(2)}</span></div>
+        </div>
+      </div>
+      ${paySection}
+      ${estimateExtras}
+      <div class="verse">"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters." — Colossians 3:23</div>
+      <div class="sbox navy">
+        <div class="slabel">Accepted payment methods</div>
+        <div class="pills">
+          <span class="pill">Cash</span>
+          <span class="pill">Zelle</span>
+          <span class="pill">Venmo</span>
+          <span class="pill">Check</span>
+          ${!isEst ? '<span class="pill stripe">Pay online</span>' : ''}
+        </div>
+        <div class="stext">Zelle: (760) 442-0183 &nbsp;|&nbsp; Venmo: @hspexteriorcleaning &nbsp;|&nbsp; Check: HSP Pressure Washing</div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="footer-contact">(760) 442-0183<br>hspexteriorcleaning@gmail.com</div>
+      <div class="footer-thank">Thank you for your business!</div>
+    </div>`;
+
+  document.getElementById('doc-container').innerHTML = html;
+  document.title = `HSP ${isEst ? 'Estimate' : 'Invoice'} #${doc.docNumber} — ${doc.customerName}`;
+}
+
+loadInvoice();
+</script>
+</body>
+</html>
