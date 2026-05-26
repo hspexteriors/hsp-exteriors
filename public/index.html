@@ -730,8 +730,44 @@ async function saveJob(){
 }
 function jobCard(j,i){
   const paidBadge=j.paid?'<span class="badge" style="background:#d1fae5;color:#065f46;margin-left:6px">Paid</span>':'';
-  return`<div class="card"><div class="card-head"><div style="flex:1"><div class="card-name">${j.customerName}</div><div class="card-sub" style="font-weight:600;color:var(--navy2)">${j.type}</div><div class="card-sub">${j.desc||''}</div><div class="card-sub">${j.date?'📅 '+j.date:'No date set'}</div></div><div style="text-align:right;flex-shrink:0"><span class="badge ${badgeCls(j.status)}">${j.status}</span>${paidBadge}<div style="font-size:20px;font-weight:700;color:var(--accent);margin-top:8px">$${Math.round(j.amount||0).toLocaleString()}</div></div></div><div class="card-foot"><button class="btn btn-sm" onclick="advJob(${i})">Advance</button><button class="btn btn-sm" onclick="draftJobEmail(${i})">Draft email</button>${!j.paid?`<button class="btn btn-sm btn-primary" onclick="openPayment(${i})">Request payment</button>`:''}</div></div>`;
+  return`<div class="card"><div class="card-head"><div style="flex:1"><div class="card-name">${j.customerName}</div><div class="card-sub" style="font-weight:600;color:var(--navy2)">${j.type}</div><div class="card-sub">${j.desc||''}</div><div class="card-sub">${j.date?'📅 '+j.date:'No date set'}</div></div><div style="text-align:right;flex-shrink:0"><span class="badge ${badgeCls(j.status)}">${j.status}</span>${paidBadge}<div style="font-size:20px;font-weight:700;color:var(--accent);margin-top:8px">$${Math.round(j.amount||0).toLocaleString()}</div></div></div><div class="card-foot"><button class="btn btn-sm" onclick="advJob(${i})">Advance</button><button class="btn btn-sm" onclick="editJobStatus(${i})">Edit status</button><button class="btn btn-sm" onclick="draftJobEmail(${i})">Draft email</button>${!j.paid?`<button class="btn btn-sm btn-primary" onclick="openPayment(${i})">Request payment</button>`:''}<button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="deleteJob(${i})">Delete</button></div></div>`;
 }
+function deleteJob(i){
+  if(!confirm('Delete this job for '+jobs[i].customerName+'? This cannot be undone.'))return;
+  const job=jobs[i];
+  if(SB&&job._id)SB.from('jobs').delete().eq('id',job._id).then();
+  jobs.splice(i,1);
+  saveLocal();renderJobs();renderPipeline();renderDash();
+  toast('Job deleted ✓');
+}
+
+function editJobStatus(i){
+  const j=jobs[i];
+  const statuses=['lead','quoted','active','done'];
+  const opts=statuses.map(s=>`<option value="${s}"${j.status===s?' selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('');
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(10,20,50,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML=`<div style="background:var(--surface);border-radius:var(--radius-xl);padding:24px;width:100%;max-width:360px;box-shadow:var(--shadow-lg)">
+    <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:16px">Edit job status</div>
+    <div style="font-size:14px;color:var(--ink2);margin-bottom:12px">${j.customerName} — ${j.type}</div>
+    <select id="edit-status-sel" style="width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:15px;background:var(--surface);color:var(--ink);font-family:var(--font);margin-bottom:16px">${opts}</select>
+    <div style="display:flex;gap:10px">
+      <button class="btn" style="flex:1" onclick="this.closest('[style*=fixed]').remove()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveJobStatus(${i},document.getElementById('edit-status-sel').value,this.closest('[style*=fixed]'))">Save</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function saveJobStatus(i,status,modal){
+  jobs[i].status=status;
+  saveLocal();
+  if(SB&&jobs[i]._id)SB.from('jobs').update({status}).eq('id',jobs[i]._id).then();
+  modal.remove();
+  renderJobs();renderPipeline();renderDash();
+  toast('Status updated ✓');
+}
+
 function renderJobs(){
   const el=document.getElementById('job-list');
   if(!jobs.length){el.innerHTML=`<div class="empty"><span class="empty-icon">🧹</span>No jobs yet.</div>`;return;}
