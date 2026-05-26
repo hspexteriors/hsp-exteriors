@@ -464,7 +464,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
     <button class="btn" onclick="closeModal('doc-preview')">Close</button>
     <button class="btn btn-sm" onclick="copyDocText()">Copy text</button>
     <button class="btn btn-sm" onclick="sendDocText(currentDocIndex)">Send text</button>
-    <button class="btn btn-sm" onclick="sendDocEmail(currentDocIndex)">Send email</button>
+    <button class="btn btn-sm" onclick="sendDocEmail(currentDocIndex)">Copy &amp; Email</button>
     <button class="btn btn-sm btn-primary" onclick="generateStripeForDoc()">Payment link</button>
   </div>
 </div></div>
@@ -1069,9 +1069,86 @@ function sendDocText(i){
 }
 function sendDocEmail(i){
   const doc=invoices[i];
-  const subject=encodeURIComponent(`${doc.docType==='estimate'?'Estimate':'Invoice'} #${doc.docNumber} from HSP Exterior Cleaning — $${doc.total.toFixed(2)}`);
-  const body=encodeURIComponent(copyDocText()||'');
-  window.open(`mailto:${doc.customerEmail||''}?subject=${subject}`,'_blank');
+  const isEst=doc.docType==='estimate';
+  const subject=`${isEst?'Estimate':'Invoice'} #${doc.docNumber} from HSP Exterior Cleaning — $${doc.total.toFixed(2)}`;
+  const html=buildDocHtml(doc);
+
+  // Copy HTML to clipboard
+  const blob=new Blob([html],{type:'text/html'});
+  const plainBlob=new Blob([buildDocPlainText(doc)],{type:'text/plain'});
+  try{
+    navigator.clipboard.write([new ClipboardItem({'text/html':blob,'text/plain':plainBlob})]).then(()=>{
+      toast('HTML copied! Open Gmail → Compose → paste (Cmd+V) ✓');
+      // Also open Gmail compose with subject pre-filled
+      const gmailUrl=`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(doc.customerEmail||'')}&su=${encodeURIComponent(subject)}`;
+      setTimeout(()=>window.open(gmailUrl,'_blank'),1000);
+    }).catch(()=>{
+      // Fallback: copy plain text
+      navigator.clipboard.writeText(buildDocPlainText(doc)).then(()=>{
+        toast('Copied! Open Gmail → Compose → paste ✓');
+        const gmailUrl=`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(doc.customerEmail||'')}&su=${encodeURIComponent(subject)}`;
+        window.open(gmailUrl,'_blank');
+      });
+    });
+  }catch(e){
+    navigator.clipboard.writeText(buildDocPlainText(doc));
+    toast('Copied — paste into Gmail compose ✓');
+  }
+}
+
+function buildDocPlainText(doc){
+  const isEst=doc.docType==='estimate';
+  let text=`HSP EXTERIOR CLEANING — ${isEst?'ESTIMATE':'INVOICE'} #${doc.docNumber}\nDate: ${doc.docDate}\n\nPrepared for: ${doc.customerName}\n${doc.customerAddress||''}\n${doc.customerPhone||''}\n\nSERVICES:\n`;
+  (doc.lineItems||[]).forEach(l=>{text+=`${l.name}: $${Number(l.amount).toFixed(2)}\n`;});
+  text+=`\nTotal: $${Number(doc.total).toFixed(2)}\n`;
+  if(!isEst&&doc.stripeUrl)text+=`\nPay online: ${doc.stripeUrl}\n`;
+  text+=`\nZelle: (760) 442-0183 | Venmo: @hspexteriorcleaning | Check: HSP Pressure Washing\n`;
+  if(isEst)text+=`\nTo approve, reply with your full legal name.\n`;
+  text+=`\n"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters." — Colossians 3:23\n\nHSP Exterior Cleaning | (760) 442-0183 | hspexteriorcleaning@gmail.com`;
+  return text;
+}
+
+function buildDocHtml(doc){
+  const isEst=doc.docType==='estimate';
+  const dateStr=doc.docDate?new Date(doc.docDate).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'';
+  const validStr=doc.validUntil?new Date(doc.validUntil).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'';
+  const itemsHtml=(doc.lineItems||[]).map(l=>`<tr><td style="padding:10px 12px;font-size:14px;font-weight:600;border-bottom:1px solid #e8eef8">${l.name}</td><td style="padding:10px 12px;font-size:14px;font-weight:600;text-align:right;border-bottom:1px solid #e8eef8">$${Number(l.amount).toFixed(2)}</td></tr>`).join('');
+  const payBtn=(!isEst&&doc.stripeUrl)?`<div style="text-align:center;margin:20px 0"><a href="${doc.stripeUrl}" style="background:#635bff;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block">Pay $${Number(doc.total).toFixed(2)} now →</a></div>`:'';
+  const estExtras=isEst?`
+    <div style="background:#fdf9f0;border-left:4px solid #c97a1a;padding:14px 16px;margin-bottom:14px;border-radius:0 8px 8px 0">
+      <p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#92400e;margin:0 0 8px">Risk Acknowledgment & Liability Notice</p>
+      <p style="font-size:12px;color:#7a4a00;line-height:1.65;margin:0">By approving this estimate, the client acknowledges that HSP Exterior Cleaning uses high-pressure water equipment and professional-grade cleaning chemicals. The client accepts inherent risk of property damage including damage to paint, siding, roofing materials, landscaping, caulking, windows, and seals. HSP Exterior Cleaning will not be held liable for pre-existing conditions or damage from deteriorated materials.</p>
+    </div>
+    <div style="background:#f0f4fa;border-radius:8px;padding:14px 16px;margin-bottom:14px">
+      <p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#5a6a8a;margin:0 0 6px">Client Approval & Signature</p>
+      <p style="font-size:12px;color:#3a4a6a;line-height:1.65;margin:0">To approve this estimate, please reply with your <strong>full legal name</strong> through the same method this was sent. Your response constitutes your electronic signature and confirms agreement to all services, pricing, terms, and the risk acknowledgment above.</p>
+    </div>`:payBtn+`
+    <div style="background:#f0f4fa;border-radius:8px;padding:14px 16px;margin-bottom:14px">
+      <p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#5a6a8a;margin:0 0 8px">Payment Instructions</p>
+      <p style="font-size:13px;color:#3a4a6a;line-height:1.85;margin:0"><strong>Zelle:</strong> (760) 442-0183<br><strong>Venmo:</strong> @hspexteriorcleaning<br><strong>Check:</strong> Payable to HSP Pressure Washing<br><strong>Cash:</strong> Accepted in person</p>
+    </div>`;
+  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f0f4fa;font-family:Arial,sans-serif">
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(15,30,60,0.15)">
+  <div style="background:#0f1e3c;padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start">
+    <div><div style="color:#fff;font-size:18px;font-weight:700">HSP Exterior Cleaning</div><div style="color:#b8c8d8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-top:3px">Residential & Commercial</div></div>
+    <div style="text-align:right"><div style="color:#fff;font-size:22px;font-weight:700">${isEst?'Estimate':'Invoice'}</div><div style="color:#b8c8d8;font-size:12px;margin-top:3px">#${doc.docNumber}</div></div>
+  </div>
+  <div style="padding:24px 28px">
+    <table style="width:100%;margin-bottom:20px"><tr>
+      <td style="vertical-align:top"><p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#5a6a8a;margin:0 0 6px">${isEst?'Prepared for':'Billed to'}</p><p style="font-size:13px;color:#1a1a2e;line-height:1.7;margin:0"><strong>${doc.customerName}</strong><br>${doc.customerAddress||''}<br>${doc.customerPhone||''}</p></td>
+      <td style="vertical-align:top;text-align:right"><p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#5a6a8a;margin:0 0 6px">Details</p><p style="font-size:13px;color:#1a1a2e;line-height:1.7;margin:0"><strong>Date:</strong> ${dateStr}<br>${isEst?`<strong>Valid until:</strong> ${validStr}`:'<strong>Due:</strong> Upon receipt'}</p></td>
+    </tr></table>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:18px">
+      <thead><tr style="background:#f0f4fa"><th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#5a6a8a;font-weight:700">Service</th><th style="padding:10px 12px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#5a6a8a;font-weight:700">Amount</th></tr></thead>
+      <tbody>${itemsHtml}</tbody>
+      <tfoot><tr><td style="padding:10px 12px;font-weight:700;font-size:15px;color:#0f1e3c;border-top:2px solid #d0d8e8">${isEst?'Estimated total':'Total due'}</td><td style="padding:10px 12px;text-align:right;font-weight:700;font-size:15px;color:#0f1e3c;border-top:2px solid #d0d8e8">$${Number(doc.total).toFixed(2)}</td></tr></tfoot>
+    </table>
+    ${estExtras}
+    <p style="text-align:center;font-style:italic;color:#5a6a8a;font-size:12px;padding:14px 0;border-top:1px solid #d0d8e8;border-bottom:1px solid #d0d8e8;margin:16px 0">"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters." — Colossians 3:23</p>
+    <div style="background:#e8eef8;border-radius:8px;padding:13px 16px"><p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#5a6a8a;margin:0 0 8px">Payment Methods</p><p style="font-size:12px;color:#3a4a6a;margin:0">Cash &nbsp;|&nbsp; Zelle: (760) 442-0183 &nbsp;|&nbsp; Venmo: @hspexteriorcleaning &nbsp;|&nbsp; Check: HSP Pressure Washing</p></div>
+  </div>
+  <div style="background:#f0f4fa;padding:14px 28px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:#5a6a8a">(760) 442-0183 | hspexteriorcleaning@gmail.com</span><span style="font-size:12px;font-weight:600;color:#0f1e3c">Thank you for your business!</span></div>
+</div></body></html>`;
 }
 function deleteDoc(i){
   if(!confirm(`Delete this ${invoices[i].docType}? This cannot be undone.`))return;
@@ -1091,7 +1168,7 @@ function renderInvoices(){
     const statusColor=doc.paid?'#065f46':isEst?'#92400e':'#991b1b';
     const statusBg=doc.paid?'#d1fae5':isEst?'#fdf3e3':'#fee2e2';
     const statusLabel=doc.paid?'Paid':isEst?'Pending':'Unpaid';
-    return`<div class="card"><div class="card-head"><div><div class="card-name">${doc.customerName}</div><div class="card-sub">${isEst?'Estimate':'Invoice'} #${doc.docNumber} · ${doc.added||''}</div><div class="card-sub">${(doc.lineItems||[]).map(l=>l.name).join(', ')}</div></div><div style="text-align:right;flex-shrink:0"><span style="display:inline-block;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;background:${statusBg};color:${statusColor}">${statusLabel}</span><div style="font-size:18px;font-weight:700;color:var(--accent);margin-top:6px">$${(doc.total||0).toFixed(2)}</div></div></div><div class="card-foot"><button class="btn btn-sm" onclick="previewDoc(${i})">Preview</button><button class="btn btn-sm" onclick="copyDocText();currentDocIndex=${i}">Copy</button><button class="btn btn-sm" onclick="sendDocText(${i})">Text</button><button class="btn btn-sm" onclick="sendDocEmail(${i})">Email</button>${!doc.paid&&!isEst?`<button class="btn btn-sm btn-primary" onclick="currentDocIndex=${i};generateStripeForDoc()">Pay link</button>`:''}${isEst?`<button class="btn btn-sm btn-primary" onclick="convertToInvoice(${i})">→ Invoice</button>`:''}<button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="deleteDoc(${i})">Delete</button></div></div>`;
+    return`<div class="card"><div class="card-head"><div><div class="card-name">${doc.customerName}</div><div class="card-sub">${isEst?'Estimate':'Invoice'} #${doc.docNumber} · ${doc.added||''}</div><div class="card-sub">${(doc.lineItems||[]).map(l=>l.name).join(', ')}</div></div><div style="text-align:right;flex-shrink:0"><span style="display:inline-block;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;background:${statusBg};color:${statusColor}">${statusLabel}</span><div style="font-size:18px;font-weight:700;color:var(--accent);margin-top:6px">$${(doc.total||0).toFixed(2)}</div></div></div><div class="card-foot"><button class="btn btn-sm" onclick="previewDoc(${i})">Preview</button><button class="btn btn-sm" onclick="copyDocText();currentDocIndex=${i}">Copy</button><button class="btn btn-sm" onclick="sendDocText(${i})">Text</button><button class="btn btn-sm" onclick="sendDocEmail(${i})">Copy &amp; Email</button>${!doc.paid&&!isEst?`<button class="btn btn-sm btn-primary" onclick="currentDocIndex=${i};generateStripeForDoc()">Pay link</button>`:''}${isEst?`<button class="btn btn-sm btn-primary" onclick="convertToInvoice(${i})">→ Invoice</button>`:''}<button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="deleteDoc(${i})">Delete</button></div></div>`;
   }).join('');
 }
 
