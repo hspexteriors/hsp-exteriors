@@ -84,8 +84,17 @@ async function loadInvoice() {
   try {
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const SB = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data, error } = await SB.from('invoices').select('*').eq('doc_number', docNumber).single();
-    if (error || !data) { showError('Invoice not found.'); return; }
+
+    // Try UUID lookup first, then fall back to doc_number
+    let data, error;
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(docNumber);
+    if (isUUID) {
+      ({ data, error } = await SB.from('invoices').select('*').eq('id', docNumber).single());
+    }
+    if (!data) {
+      ({ data, error } = await SB.from('invoices').select('*').eq('doc_number', docNumber).order('created_at', { ascending: false }).limit(1).single());
+    }
+    if (error || !data) { showError('Invoice not found. Please ask HSP Exterior Cleaning to resend the link.'); return; }
 
     const doc = {
       docType: data.doc_type,

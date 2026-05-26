@@ -1012,8 +1012,10 @@ async function saveDoc(){
   if(!items.length){toast('Add at least one line item');return;}
   const subtotal=items.reduce((a,i)=>a+i.amount,0);
   const prefix=currentDocType==='estimate'?'EST':'INV';
+  const timestamp=Date.now().toString().slice(-4);
   const num=invoices.filter(i=>i.docType===currentDocType).length+1;
-  const doc={docType:currentDocType,docNumber:`${prefix}-${String(num).padStart(4,'0')}`,customerName:customers[parseInt(ci)].name,customerAddress:document.getElementById('doc-address').value,customerPhone:document.getElementById('doc-phone').value,customerEmail:document.getElementById('doc-email').value,lineItems:items,subtotal,total:subtotal,status:currentDocType==='estimate'?'pending':'unpaid',notes:document.getElementById('doc-notes').value,docDate:document.getElementById('doc-date').value,validUntil:document.getElementById('doc-valid').value||'',stripeUrl:null,paid:false,added:new Date().toLocaleDateString()};
+  const docNumber=`${prefix}-${String(num).padStart(4,'0')}-${timestamp}`;
+  const doc={docType:currentDocType,docNumber,customerName:customers[parseInt(ci)].name,customerAddress:document.getElementById('doc-address').value,customerPhone:document.getElementById('doc-phone').value,customerEmail:document.getElementById('doc-email').value,lineItems:items,subtotal,total:subtotal,status:currentDocType==='estimate'?'pending':'unpaid',notes:document.getElementById('doc-notes').value,docDate:document.getElementById('doc-date').value,validUntil:document.getElementById('doc-valid').value||'',stripeUrl:null,paid:false,added:new Date().toLocaleDateString()};
   invoices.unshift(doc);saveLocal();await dbInsert('invoices',doc);
   currentDocIndex=0;closeModal('new-doc');renderInvoices();previewDoc(0);toast('Saved ✓');
 }
@@ -1052,13 +1054,17 @@ function sendDocText(i){
   const doc=invoices[i];
   const phone=doc.customerPhone?doc.customerPhone.replace(/\D/g,''):'';
   const isEst=doc.docType==='estimate';
-  const invoiceUrl=`${window.location.origin}/invoice.html?id=${doc.docNumber}`;
+  const invoiceId=doc.id||doc.docNumber;
+  const invoiceUrl=`${window.location.origin}/invoice.html?id=${invoiceId}`;
   const firstName=doc.customerName.split(' ')[0];
-  let msg=`Hi ${firstName}! Here is your ${isEst?'estimate':'invoice'} from HSP Exterior Cleaning.\n\n`;
-  msg+=`View your full ${isEst?'estimate':'invoice'} here:\n${invoiceUrl}\n\n`;
-  if(!isEst&&doc.stripeUrl){msg+=`Pay online: ${doc.stripeUrl}\n\n`;}
-  msg+=`Total: $${doc.total.toFixed(2)}\n`;
-  msg+=`\nQuestions? Call or text (760) 442-0183`;
+  let msg=`Hi ${firstName}! HSP Exterior Cleaning sent you a${isEst?' estimate':' invoice'} for $${doc.total.toFixed(2)}.\n\n`;
+  msg+=`Tap the link below to view and ${isEst?'approve':'pay'}:\n\n`;
+  msg+=`${invoiceUrl}\n\n`;
+  if(!isEst&&doc.stripeUrl){
+    msg+=`Or pay directly here:\n\n`;
+    msg+=`${doc.stripeUrl}\n\n`;
+  }
+  msg+=`Questions? Call or text (760) 442-0183`;
   window.open(`sms:${phone}&body=${encodeURIComponent(msg)}`,'_blank');
 }
 function sendDocEmail(i){
