@@ -200,6 +200,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
     <div class="stat"><div class="stat-label">Contacts</div><div class="stat-val" id="s-contacts">0</div></div>
     <div class="stat"><div class="stat-label">Sent</div><div class="stat-val" id="s-sent">0</div></div>
   </div>
+  <div style="background:linear-gradient(135deg,#f4b400,#e09000);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#fff">5.0 ⭐⭐⭐⭐⭐ on Google</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.85);margin-top:2px">Tap to send a review request to any customer</div>
+    </div>
+    <button class="btn btn-sm" onclick="openReviewRequestModal()" style="background:#fff;color:#e09000;border-color:#fff;font-weight:700;white-space:nowrap">Send request</button>
+  </div>
   <div class="sec-head"><div class="sec-title">Recent jobs</div><button class="btn btn-primary btn-sm" onclick="openModal('job')">+ Add job</button></div>
   <div id="dash-jobs"></div>
 </div>
@@ -477,6 +484,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
   </div>
 </div></div>
 
+
+<!-- REVIEW REQUEST MODAL -->
+<div class="modal-bg" id="modal-review-request"><div class="modal">
+  <span class="modal-handle"></span>
+  <div class="modal-title">⭐ Request a Google review</div>
+  <div class="field"><label>Select customer</label><select id="review-cust"><option value="">Select customer...</option></select></div>
+  <div style="background:#fdf9f0;border-radius:var(--radius);padding:12px;margin-bottom:14px;font-size:12px;color:#7a4a00;line-height:1.7" id="review-preview"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('review-request')">Cancel</button>
+    <button class="btn btn-primary" style="background:#f4b400;border-color:#f4b400" onclick="sendReviewFromModal()">Send text ⭐</button>
+  </div>
+</div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -532,8 +551,7 @@ async function dbLoad(){
       SB.from('invoices').select('*').order('created_at',{ascending:false})
     ]);
     customers=c.data||[];
-    jobs=(j.data||[]).map(r=>({customerId:r.customer_id,customerName:r.customer_name,type:r.type,description
-      :r.desc,amount:r.amount||0,status:r.status,date:r.job_date,added:r.added,paid:r.paid,_id:r.id}));
+    jobs=(j.data||[]).map(r=>({customerId:r.customer_id,customerName:r.customer_name,type:r.type,desc:r.description,amount:r.amount||0,status:r.status,date:r.job_date,added:r.added,paid:r.paid,_id:r.id}));
     contacts=ct.data||[];
     campaigns=(ca.data||[]).map(r=>({...r,date:r.campaign_date}));
     quotes=(q.data||[]).map(r=>({...r,totalLow:r.total_low,totalHigh:r.total_high,lineItems:r.line_items,date:r.quote_date,customerName:r.customer_name}));
@@ -554,7 +572,11 @@ async function dbInsert(table,row){
     invoices:r=>({doc_type:r.docType,doc_number:r.docNumber,customer_name:r.customerName,customer_address:r.customerAddress,customer_phone:r.customerPhone,customer_email:r.customerEmail,line_items:r.lineItems,subtotal:r.subtotal,total:r.total,status:r.status,notes:r.notes,doc_date:r.docDate,valid_until:r.validUntil,stripe_url:r.stripeUrl||null,paid:r.paid||false}),
     settings:r=>({id:'main',data:JSON.stringify(cfg)})
   };
-  try{const {data,error}=await SB.from(table).insert(map[table](row)).select().single();if(!error&&data)return data;}catch(e){}return null;
+  try{
+    const {data,error}=await SB.from(table).insert(map[table](row)).select().single();
+    if(!error&&data)return data;
+  }catch(e){}
+  return null;
 }
 
 function loadLocal(){
@@ -736,7 +758,7 @@ function renderCustomers(){
   if(!filtered.length){el.innerHTML=`<div class="empty"><span class="empty-icon">🔍</span>No customers match that search.</div>`;return;}
   el.innerHTML=filtered.map(({c,i})=>{
     const cj=jobs.filter(j=>j.customerId===i);
-    return`<div class="card"><div class="card-head"><div><div class="card-name">${c.name}</div><div class="card-sub">${[c.phone,c.email].filter(Boolean).join(' · ')}</div><div class="card-sub">${c.address||''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:13px;color:var(--ink3);font-weight:600">${cj.length} job${cj.length!==1?'s':''}</div><div style="font-size:11px;color:var(--ink4)">${c.added||''}</div></div></div>${c.notes?`<div style="font-size:13px;color:var(--ink3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${c.notes}</div>`:''}<div class="card-foot"><button class="btn btn-sm" onclick="draftFollowUp(${i})">Draft email</button><button class="btn btn-sm" onclick="openInMaps('${(c.address||'').replace(/'/g,"\\'")}')">Maps</button><button class="btn btn-primary btn-sm" onclick="addJobFor(${i})">+ Job</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="deleteCustomer(${i})">Delete</button></div></div>`;
+    return`<div class="card"><div class="card-head"><div><div class="card-name">${c.name}</div><div class="card-sub">${[c.phone,c.email].filter(Boolean).join(' · ')}</div><div class="card-sub">${c.address||''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:13px;color:var(--ink3);font-weight:600">${cj.length} job${cj.length!==1?'s':''}</div><div style="font-size:11px;color:var(--ink4)">${c.added||''}</div></div></div>${c.notes?`<div style="font-size:13px;color:var(--ink3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${c.notes}</div>`:''}<div class="card-foot"><button class="btn btn-sm" onclick="draftFollowUp(${i})">Draft email</button><button class="btn btn-sm" onclick="openInMaps('${(c.address||'').replace(/'/g,"\\'")}')">Maps</button><button class="btn btn-primary btn-sm" onclick="addJobFor(${i})">+ Job</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="deleteCustomer(${i})">Delete</button><button class="btn btn-sm" style="color:#f4b400;border-color:#f4b400" onclick="sendReviewRequest(${i})">⭐ Review</button></div></div>`;
   }).join('');
 }
 
@@ -747,9 +769,8 @@ async function saveJob(){
   const ci=document.getElementById('j-cust').value;if(ci==='')return;
   const custIdx=parseInt(ci);
   const j={customerId:custIdx,customerName:customers[custIdx].name,type:document.getElementById('j-type').value,desc:document.getElementById('j-desc').value,amount:parseFloat(document.getElementById('j-amount').value)||0,status:document.getElementById('j-status').value,date:document.getElementById('j-date').value,added:new Date().toLocaleDateString(),_custId:customers[custIdx]._id||customers[custIdx].id||null};
-jobs.push(j);saveLocal();dbInsert('jobs',j);
+  jobs.push(j);saveLocal();
   const jRes=await dbInsert('jobs',j);
-  if(jRes?.id){jobs[jobs.length-1]._id=jRes.id;saveLocal();}
   if(jRes?.id){jobs[jobs.length-1]._id=jRes.id;saveLocal();}
   if(document.getElementById('j-gcal').value==='yes'&&j.date)addToGCal(j);
   closeModal('job');['j-desc','j-amount','j-date'].forEach(id=>document.getElementById(id).value='');document.getElementById('j-gcal').value='no';
@@ -757,7 +778,7 @@ jobs.push(j);saveLocal();dbInsert('jobs',j);
 }
 function jobCard(j,i){
   const paidBadge=j.paid?'<span class="badge" style="background:#d1fae5;color:#065f46;margin-left:6px">Paid</span>':'';
-  return`<div class="card"><div class="card-head"><div style="flex:1"><div class="card-name">${j.customerName}</div><div class="card-sub" style="font-weight:600;color:var(--navy2)">${j.type}</div><div class="card-sub">${j.desc||''}</div><div class="card-sub">${j.date?'📅 '+j.date:'No date set'}</div></div><div style="text-align:right;flex-shrink:0"><span class="badge ${badgeCls(j.status)}">${j.status}</span>${paidBadge}<div style="font-size:20px;font-weight:700;color:var(--accent);margin-top:8px">$${Math.round(j.amount||0).toLocaleString()}</div></div></div><div class="card-foot"><button class="btn btn-sm" onclick="advJob(${i})">Advance</button><button class="btn btn-sm" onclick="editJobStatus(${i})">Edit status</button><button class="btn btn-sm" onclick="draftJobEmail(${i})">Draft email</button>${!j.paid?`<button class="btn btn-sm btn-primary" onclick="openPayment(${i})">Request payment</button>`:''}<button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="deleteJob(${i})">Delete</button></div></div>`;
+  return`<div class="card"><div class="card-head"><div style="flex:1"><div class="card-name">${j.customerName}</div><div class="card-sub" style="font-weight:600;color:var(--navy2)">${j.type}</div><div class="card-sub">${j.desc||''}</div><div class="card-sub">${j.date?'📅 '+j.date:'No date set'}</div></div><div style="text-align:right;flex-shrink:0"><span class="badge ${badgeCls(j.status)}">${j.status}</span>${paidBadge}<div style="font-size:20px;font-weight:700;color:var(--accent);margin-top:8px">$${Math.round(j.amount||0).toLocaleString()}</div></div></div><div class="card-foot"><button class="btn btn-sm" onclick="advJob(${i})">Advance</button><button class="btn btn-sm" onclick="editJobStatus(${i})">Edit status</button><button class="btn btn-sm" onclick="draftJobEmail(${i})">Draft email</button>${!j.paid?`<button class="btn btn-sm btn-primary" onclick="openPayment(${i})">Request payment</button>`:''}<button class="btn btn-sm" style="color:#f4b400;border-color:#f4b400" onclick="sendReviewRequestForJob(${i})">⭐ Review</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="deleteJob(${i})">Delete</button></div></div>`;
 }
 function deleteJob(i){
   if(!confirm('Delete this job for '+jobs[i].customerName+'? This cannot be undone.'))return;
@@ -1224,6 +1245,58 @@ function renderSettings(){
   document.getElementById('co-email').value=cfg.coEmail||'hspexteriorcleaning@gmail.com';
 }
 function updateBadge(){const b=document.getElementById('api-badge');if(cfg.apiKey){b.textContent='AI: active';b.classList.add('set');}else{b.textContent='AI: not set';b.classList.remove('set');}}
+
+
+
+function openReviewRequestModal(){
+  const sel = document.getElementById('review-cust');
+  sel.innerHTML = '<option value="">Select customer...</option>' + customers.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');
+  document.getElementById('review-preview').textContent = 'Select a customer to preview the review request message.';
+  sel.onchange = function(){
+    const i = parseInt(this.value);
+    if(isNaN(i))return;
+    const c = customers[i];
+    const firstName = (c.name||'there').split(' ')[0];
+    document.getElementById('review-preview').textContent = `Hi ${firstName}! Thank you for choosing HSP Exterior Cleaning — it was a pleasure serving you! 🙏\n\nIf you're happy with the results, would you mind leaving us a quick Google review?\n\nhttps://maps.app.goo.gl/xDfBWnAZGae51kAF9\n\nThank you! — Harold`;
+  };
+  openModal('review-request');
+}
+function sendReviewFromModal(){
+  const i = parseInt(document.getElementById('review-cust').value);
+  if(isNaN(i)){toast('Please select a customer');return;}
+  sendReviewRequest(i);
+  closeModal('review-request');
+}
+
+// ── GOOGLE REVIEW REQUESTS ──
+const GOOGLE_REVIEW_LINK = 'https://maps.app.goo.gl/xDfBWnAZGae51kAF9';
+
+function sendReviewRequest(i) {
+  const c = customers[i];
+  const phone = c.phone ? c.phone.replace(/\D/g, '') : '';
+  const firstName = (c.name || 'there').split(' ')[0];
+  const msg = `Hi ${firstName}! Thank you for choosing HSP Exterior Cleaning — it was a pleasure serving you! 🙏\n\nIf you're happy with the results, would you mind leaving us a quick Google review? It only takes 30 seconds and means the world to us:\n\n${GOOGLE_REVIEW_LINK}\n\nThank you so much!\n— Harold, HSP Exterior Cleaning`;
+  window.open(`sms:${phone}&body=${encodeURIComponent(msg)}`, '_blank');
+  toast('Opening Messages ✓');
+}
+
+function sendReviewRequestForJob(i) {
+  const j = jobs[i];
+  const custIdx = j.customerId;
+  const c = customers[custIdx] || {};
+  const phone = c.phone ? c.phone.replace(/\D/g, '') : '';
+  const firstName = (j.customerName || 'there').split(' ')[0];
+  const msg = `Hi ${firstName}! Thank you for trusting HSP Exterior Cleaning with your ${j.type.toLowerCase()} — it was a pleasure! 🙏\n\nIf you're happy with the results, we'd love a quick Google review. It only takes 30 seconds:\n\n${GOOGLE_REVIEW_LINK}\n\nThank you so much!\n— Harold, HSP Exterior Cleaning`;
+  window.open(`sms:${phone}&body=${encodeURIComponent(msg)}`, '_blank');
+  toast('Opening Messages ✓');
+}
+
+function sendReviewRequestManual(name, phone) {
+  const firstName = (name || 'there').split(' ')[0];
+  const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+  const msg = `Hi ${firstName}! Thank you for choosing HSP Exterior Cleaning — it was a pleasure serving you! 🙏\n\nIf you're happy with the results, would you mind leaving us a quick Google review? It only takes 30 seconds:\n\n${GOOGLE_REVIEW_LINK}\n\nThank you so much!\n— Harold, HSP Exterior Cleaning`;
+  window.open(`sms:${cleanPhone}&body=${encodeURIComponent(msg)}`, '_blank');
+}
 
 // ── INIT ──
 updateBadge();
