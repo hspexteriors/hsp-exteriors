@@ -746,7 +746,7 @@ async function saveJob(){
   const ci=document.getElementById('j-cust').value;if(ci==='')return;
   const custIdx=parseInt(ci);
   const j={customerId:custIdx,customerName:customers[custIdx].name,type:document.getElementById('j-type').value,desc:document.getElementById('j-desc').value,amount:parseFloat(document.getElementById('j-amount').value)||0,status:document.getElementById('j-status').value,date:document.getElementById('j-date').value,added:new Date().toLocaleDateString(),_custId:customers[custIdx]._id||customers[custIdx].id||null};
-  jobs.push(j);saveLocal();
+jobs.push(j);saveLocal();dbInsert('jobs',j);
   const jRes=await dbInsert('jobs',j);
   if(jRes?.id){jobs[jobs.length-1]._id=jRes.id;saveLocal();}
   if(jRes?.id){jobs[jobs.length-1]._id=jRes.id;saveLocal();}
