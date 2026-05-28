@@ -547,7 +547,7 @@ async function dbInsert(table,row){
   if(!SB)return null;
   const map={
     customers:r=>({name:r.name,phone:r.phone,email:r.email,address:r.address,notes:r.notes,added:r.added}),
-    jobs:r=>({customer_id:r._custId||null,customer_name:r.customerName,type:r.type,desc:r.desc,amount:r.amount,status:r.status,job_date:r.date,added:r.added}),
+    jobs:r=>({customer_id:r._custId||null,customer_name:r.customerName,type:r.type,description:r.desc,amount:r.amount,status:r.status,job_date:r.date,added:r.added}),
     contacts:r=>({name:r.name,phone:r.phone,email:r.email,address:r.address,source:r.source,status:r.status,added:r.added}),
     campaigns:r=>({name:r.name,type:r.type,target:r.target,sent:r.sent,opened:r.opened,replied:r.replied,campaign_date:r.date}),
     quotes:r=>({type:r.type,state:r.state,size:r.size,prop:r.prop,notes:r.notes,customer_name:r.customerName,total_low:r.totalLow,total_high:r.totalHigh,line_items:r.lineItems,market:r.market,competitive:r.competitive,quote_date:r.date}),
