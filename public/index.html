@@ -215,6 +215,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 
 <div id="tab-jobs" style="display:none">
   <div class="sec-head"><div class="sec-title">Jobs</div><button class="btn btn-primary btn-sm" onclick="openModal('job')">+ Add job</button></div>
+  <div class="search-wrap">
+    <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="job-search" placeholder="Search by customer, service, or status..." oninput="renderJobs()"/>
+  </div>
   <div id="job-list"></div>
 </div>
 
@@ -275,6 +279,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
       <button class="btn btn-sm" onclick="openNewDoc('estimate')">+ Estimate</button>
       <button class="btn btn-primary btn-sm" onclick="openNewDoc('invoice')">+ Invoice</button>
     </div>
+  </div>
+  <div class="search-wrap">
+    <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="inv-search" placeholder="Search by customer or document number..." oninput="renderInvoices()"/>
   </div>
   <div id="invoice-list"></div>
 </div>
@@ -535,17 +543,21 @@ async function dbLoad(){
 }
 
 async function dbInsert(table,row){
-  if(!SB)return;
+  if(!SB)return null;
   const map={
     customers:r=>({name:r.name,phone:r.phone,email:r.email,address:r.address,notes:r.notes,added:r.added}),
-    jobs:r=>({customer_id:null,customer_name:r.customerName,type:r.type,desc:r.desc,amount:r.amount,status:r.status,job_date:r.date,added:r.added}),
+    jobs:r=>({customer_id:r._custId||null,customer_name:r.customerName,type:r.type,desc:r.desc,amount:r.amount,status:r.status,job_date:r.date,added:r.added}),
     contacts:r=>({name:r.name,phone:r.phone,email:r.email,address:r.address,source:r.source,status:r.status,added:r.added}),
     campaigns:r=>({name:r.name,type:r.type,target:r.target,sent:r.sent,opened:r.opened,replied:r.replied,campaign_date:r.date}),
     quotes:r=>({type:r.type,state:r.state,size:r.size,prop:r.prop,notes:r.notes,customer_name:r.customerName,total_low:r.totalLow,total_high:r.totalHigh,line_items:r.lineItems,market:r.market,competitive:r.competitive,quote_date:r.date}),
     invoices:r=>({doc_type:r.docType,doc_number:r.docNumber,customer_name:r.customerName,customer_address:r.customerAddress,customer_phone:r.customerPhone,customer_email:r.customerEmail,line_items:r.lineItems,subtotal:r.subtotal,total:r.total,status:r.status,notes:r.notes,doc_date:r.docDate,valid_until:r.validUntil,stripe_url:r.stripeUrl||null,paid:r.paid||false}),
     settings:r=>({id:'main',data:JSON.stringify(cfg)})
   };
-  try{await SB.from(table).insert(map[table](row));}catch(e){}
+  try{
+    const {data,error}=await SB.from(table).insert(map[table](row)).select().single();
+    if(!error&&data)return data;
+  }catch(e){}
+  return null;
 }
 
 function loadLocal(){
@@ -591,28 +603,39 @@ function initAutocomplete(){
   });
 }
 let acSvc=null;
+let addrSearchTimer=null;
 function onAddrInput(val){
-  if(!val||val.length<3||!window.google)return;
-  if(!acSvc)acSvc=new google.maps.places.AutocompleteService();
-  acSvc.getPlacePredictions({input:val,types:['address']},showSuggestions);
-}
-function showSuggestions(preds,status){
   const box=document.getElementById('addr-suggestions');
-  if(!preds||status!==google.maps.places.PlacesServiceStatus.OK){box.style.display='none';return;}
-  box.innerHTML=preds.slice(0,4).map(p=>`<div class="suggestion-item" onclick="selectAddr('${p.description.replace(/'/g,"\\'")}')"> ${p.description}</div>`).join('');
-  box.style.display='block';
+  if(!val||val.length<3){box.style.display='none';return;}
+  clearTimeout(addrSearchTimer);
+  addrSearchTimer=setTimeout(()=>{
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=5&countrycodes=us`,{headers:{'Accept-Language':'en-US'}})
+      .then(r=>r.json()).then(results=>{
+        if(!results.length){box.style.display='none';return;}
+        box.innerHTML=results.map(r=>`<div class="suggestion-item" onclick="selectAddr('${r.display_name.replace(/'/g,"\\'")}')">${r.display_name}</div>`).join('');
+        box.style.display='block';
+      }).catch(()=>box.style.display='none');
+  },400);
 }
+function showSuggestions(){}
 function selectAddr(addr){document.getElementById('c-address').value=addr;document.getElementById('addr-suggestions').style.display='none';}
 function useMyLocation(){
   if(!navigator.geolocation){toast('Location not available');return;}
-  toast('Getting location...');
+  toast('Getting your location...');
   navigator.geolocation.getCurrentPosition(pos=>{
-    if(!cfg.mapsKey){toast('Add Google Maps key in Settings first');return;}
-    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${pos.coords.latitude},${pos.coords.longitude}&key=${cfg.mapsKey}`)
+    const{latitude,longitude}=pos.coords;
+    // Use free OpenStreetMap Nominatim — no API key required
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,{headers:{'Accept-Language':'en-US'}})
       .then(r=>r.json()).then(d=>{
-        if(d.results?.[0]){document.getElementById('c-address').value=d.results[0].formatted_address;toast('Location filled ✓');}
-      });
-  },()=>toast('Location permission denied'));
+        if(d.display_name){
+          document.getElementById('c-address').value=d.display_name;
+          toast('Location filled ✓');
+        }else toast('Could not get address');
+      }).catch(()=>toast('Could not get address'));
+  },err=>{
+    if(err.code===1)toast('Location permission denied — enable in phone settings');
+    else toast('Could not get location');
+  });
 }
 function renderMap(){
   const mapDiv=document.getElementById('map');
@@ -692,7 +715,9 @@ function renderDash(){
 async function saveCustomer(){
   const name=document.getElementById('c-name').value.trim();if(!name)return;
   const c={name,phone:document.getElementById('c-phone').value,email:document.getElementById('c-email').value,address:document.getElementById('c-address').value,notes:document.getElementById('c-notes').value,added:new Date().toLocaleDateString()};
-  customers.push(c);saveLocal();await dbInsert('customers',c);
+  customers.push(c);saveLocal();
+  const cRes=await dbInsert('customers',c);
+  if(cRes?.id){customers[customers.length-1]._id=cRes.id;customers[customers.length-1].id=cRes.id;saveLocal();}
   closeModal('customer');['c-name','c-phone','c-email','c-address','c-notes'].forEach(id=>document.getElementById(id).value='');
   toast('Customer saved ✓');renderCustomers();renderDash();
 }
@@ -709,6 +734,7 @@ function renderCustomers(){
   const el=document.getElementById('cust-list');
   const q=(document.getElementById('cust-search')?.value||'').toLowerCase().trim();
   const filtered=customers.map((c,i)=>({c,i})).filter(({c})=>!q||(c.name||'').toLowerCase().includes(q)||(c.phone||'').includes(q)||(c.address||'').toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q));
+  filtered.sort((a,b)=>(a.c.name||'').toLowerCase().localeCompare((b.c.name||'').toLowerCase()));
   if(!customers.length){el.innerHTML=`<div class="empty"><span class="empty-icon">👥</span>No customers yet.</div>`;return;}
   if(!filtered.length){el.innerHTML=`<div class="empty"><span class="empty-icon">🔍</span>No customers match that search.</div>`;return;}
   el.innerHTML=filtered.map(({c,i})=>{
@@ -722,8 +748,11 @@ function fillJobCusts(){const sel=document.getElementById('j-cust');sel.innerHTM
 function addJobFor(ci){openModal('job');setTimeout(()=>{document.getElementById('j-cust').value=ci;},60);}
 async function saveJob(){
   const ci=document.getElementById('j-cust').value;if(ci==='')return;
-  const j={customerId:parseInt(ci),customerName:customers[parseInt(ci)].name,type:document.getElementById('j-type').value,desc:document.getElementById('j-desc').value,amount:parseFloat(document.getElementById('j-amount').value)||0,status:document.getElementById('j-status').value,date:document.getElementById('j-date').value,added:new Date().toLocaleDateString()};
-  jobs.push(j);saveLocal();await dbInsert('jobs',j);
+  const custIdx=parseInt(ci);
+  const j={customerId:custIdx,customerName:customers[custIdx].name,type:document.getElementById('j-type').value,desc:document.getElementById('j-desc').value,amount:parseFloat(document.getElementById('j-amount').value)||0,status:document.getElementById('j-status').value,date:document.getElementById('j-date').value,added:new Date().toLocaleDateString(),_custId:customers[custIdx]._id||customers[custIdx].id||null};
+  jobs.push(j);saveLocal();
+  const jRes=await dbInsert('jobs',j);
+  if(jRes?.id){jobs[jobs.length-1]._id=jRes.id;saveLocal();}
   if(document.getElementById('j-gcal').value==='yes'&&j.date)addToGCal(j);
   closeModal('job');['j-desc','j-amount','j-date'].forEach(id=>document.getElementById(id).value='');document.getElementById('j-gcal').value='no';
   toast('Job saved ✓');renderJobs();renderPipeline();renderDash();
@@ -771,7 +800,10 @@ function saveJobStatus(i,status,modal){
 function renderJobs(){
   const el=document.getElementById('job-list');
   if(!jobs.length){el.innerHTML=`<div class="empty"><span class="empty-icon">🧹</span>No jobs yet.</div>`;return;}
-  el.innerHTML=[...jobs].map((j,i)=>jobCard(j,i)).reverse().join('');
+  const q=(document.getElementById('job-search')?.value||'').toLowerCase().trim();
+  const filtered=[...jobs].map((j,i)=>({j,i})).filter(({j})=>!q||(j.customerName||'').toLowerCase().includes(q)||(j.type||'').toLowerCase().includes(q)||(j.status||'').toLowerCase().includes(q)||(j.desc||'').toLowerCase().includes(q));
+  if(!filtered.length){el.innerHTML=`<div class="empty"><span class="empty-icon">🔍</span>No jobs match that search.</div>`;return;}
+  el.innerHTML=filtered.reverse().map(({j,i})=>jobCard(j,i)).join('');
 }
 function advJob(i){const order=['lead','quoted','active','done'];const cur=order.indexOf(jobs[i].status);if(cur<order.length-1){jobs[i].status=order[cur+1];saveLocal();renderJobs();renderPipeline();renderDash();toast('Status updated ✓');}}
 
@@ -1016,7 +1048,9 @@ async function saveDoc(){
   const num=invoices.filter(i=>i.docType===currentDocType).length+1;
   const docNumber=`${prefix}-${String(num).padStart(4,'0')}-${timestamp}`;
   const doc={docType:currentDocType,docNumber,customerName:customers[parseInt(ci)].name,customerAddress:document.getElementById('doc-address').value,customerPhone:document.getElementById('doc-phone').value,customerEmail:document.getElementById('doc-email').value,lineItems:items,subtotal,total:subtotal,status:currentDocType==='estimate'?'pending':'unpaid',notes:document.getElementById('doc-notes').value,docDate:document.getElementById('doc-date').value,validUntil:document.getElementById('doc-valid').value||'',stripeUrl:null,paid:false,added:new Date().toLocaleDateString()};
-  invoices.unshift(doc);saveLocal();await dbInsert('invoices',doc);
+  invoices.unshift(doc);saveLocal();
+  const docRes=await dbInsert('invoices',doc);
+  if(docRes?.id){invoices[0]._id=docRes.id;invoices[0].id=docRes.id;saveLocal();}
   currentDocIndex=0;closeModal('new-doc');renderInvoices();previewDoc(0);toast('Saved ✓');
 }
 function previewDoc(i){
@@ -1163,7 +1197,9 @@ function convertToInvoice(i){
 function renderInvoices(){
   const el=document.getElementById('invoice-list');
   if(!invoices.length){el.innerHTML='<div class="empty"><span class="empty-icon">📄</span>No invoices or estimates yet.</div>';return;}
-  el.innerHTML=invoices.map((doc,i)=>{
+  const q=(document.getElementById('inv-search')?.value||'').toLowerCase().trim();
+  const filteredInv=invoices.map((doc,i)=>({doc,i})).filter(({doc})=>!q||(doc.customerName||'').toLowerCase().includes(q)||(doc.docNumber||'').toLowerCase().includes(q)||(doc.docType||'').toLowerCase().includes(q));
+  el.innerHTML=filteredInv.map(({doc,i})=>{
     const isEst=doc.docType==='estimate';
     const statusColor=doc.paid?'#065f46':isEst?'#92400e':'#991b1b';
     const statusBg=doc.paid?'#d1fae5':isEst?'#fdf3e3':'#fee2e2';
