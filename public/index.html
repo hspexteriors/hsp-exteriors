@@ -532,7 +532,8 @@ async function dbLoad(){
       SB.from('invoices').select('*').order('created_at',{ascending:false})
     ]);
     customers=c.data||[];
-    jobs=(j.data||[]).map(r=>({customerId:r.customer_id,customerName:r.customer_name,type:r.type,desc:r.desc,amount:r.amount||0,status:r.status,date:r.job_date,added:r.added,paid:r.paid,_id:r.id}));
+    jobs=(j.data||[]).map(r=>({customerId:r.customer_id,customerName:r.customer_name,type:r.type,description
+      :r.desc,amount:r.amount||0,status:r.status,date:r.job_date,added:r.added,paid:r.paid,_id:r.id}));
     contacts=ct.data||[];
     campaigns=(ca.data||[]).map(r=>({...r,date:r.campaign_date}));
     quotes=(q.data||[]).map(r=>({...r,totalLow:r.total_low,totalHigh:r.total_high,lineItems:r.line_items,date:r.quote_date,customerName:r.customer_name}));
