@@ -148,6 +148,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 .settings-card h3{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;}
 .settings-note{font-size:12px;color:var(--ink3);margin-top:8px;line-height:1.6;}
 
+
+
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 24px;border-radius:99px;font-size:14px;font-weight:500;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow-lg);}
 @media(min-width:768px){
 
@@ -762,7 +764,7 @@ function renderCustomers(){
   if(!filtered.length){el.innerHTML=`<div class="empty"><span class="empty-icon">🔍</span>No customers match that search.</div>`;return;}
   el.innerHTML=filtered.map(({c,i})=>{
     const cj=jobs.filter(j=>j.customerId===i);
-    return`<div class="card"><div class="card-head"><div><div class="card-name">${c.name}</div><div class="card-sub">${[c.phone,c.email].filter(Boolean).join(' · ')}</div><div class="card-sub">${c.address||''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:13px;color:var(--ink3);font-weight:600">${cj.length} job${cj.length!==1?'s':''}</div><div style="font-size:11px;color:var(--ink4)">${c.added||''}</div></div></div>${c.notes?`<div style="font-size:13px;color:var(--ink3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${c.notes}</div>`:''}<div class="card-foot"><button class="btn btn-sm btn-primary" onclick="openCustomerFile(${i})">Open file</button><button class="btn btn-sm" onclick="event.stopPropagation();addJobFor(${i})">+ Job</button><button class="btn btn-sm" style="color:#f4b400;border-color:#f4b400" onclick="event.stopPropagation();sendReviewRequest(${i})">⭐ Review</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="event.stopPropagation();deleteCustomer(${i})">Delete</button></div></div>`;
+    return`<div class="card"><div class="card-head"><div><div class="card-name">${c.name}</div><div class="card-sub">${[c.phone,c.email].filter(Boolean).join(' · ')}</div><div class="card-sub">${c.address||''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:13px;color:var(--ink3);font-weight:600">${cj.length} job${cj.length!==1?'s':''}</div><div style="font-size:11px;color:var(--ink4)">${c.added||''}</div></div></div>${c.notes?`<div style="font-size:13px;color:var(--ink3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${c.notes}</div>`:''}<div class="card-foot"><button class="btn btn-sm btn-primary" onclick="openCustomerFile(${i})">Open file</button><button class="btn btn-sm" onclick="addJobFor(${i})">+ Job</button><button class="btn btn-sm" style="color:#f4b400;border-color:#f4b400" onclick="sendReviewRequest(${i})">⭐ Review</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="deleteCustomer(${i})">Delete</button></div></div>`;
   }).join('');
 }
 
@@ -1206,6 +1208,28 @@ function buildDocHtml(doc){
   </div>
   <div style="background:#f0f4fa;padding:14px 28px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:#5a6a8a">(760) 442-0183 | hspexteriorcleaning@gmail.com</span><span style="font-size:12px;font-weight:600;color:#0f1e3c">Thank you for your business!</span></div>
 </div>
+  <div class="pin-grid">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn zero" onclick="pinPress('0')">0</button>
+    <button class="pin-btn del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error">Incorrect PIN. Try again.</div>
+</div>
+
+
+<!-- CUSTOMER FILE MODAL -->
+<div class="modal-bg" id="modal-customer-file"><div class="modal" style="max-width:600px">
+  <span class="modal-handle"></span>
+  <div id="customer-file-content"></div>
+</div></div>
 </body></html>`;
 }
 function deleteDoc(i){
@@ -1304,25 +1328,18 @@ function sendReviewRequestManual(name, phone) {
 }
 
 
-
 // ── CUSTOMER FILE ──
-let activeCustomerIdx=-1,activeFileTab='overview';
-
-function openCustomerFile(i){
-  activeCustomerIdx=i;activeFileTab='overview';
-  renderCustomerFile();openModal('customer-file');
-}
-
+var activeCustomerIdx=-1,activeFileTab='overview';
+function openCustomerFile(i){activeCustomerIdx=i;activeFileTab='overview';renderCustomerFile();openModal('customer-file');}
 function switchFileTab(tab){activeFileTab=tab;renderCustomerFile();}
-
 function renderCustomerFile(){
-  const i=activeCustomerIdx;const c=customers[i];if(!c)return;
-  const cj=jobs.filter(j=>j.customerId===i);
-  const totalSpend=cj.reduce((a,j)=>a+(j.amount||0),0);
-  const photos=JSON.parse(localStorage.getItem('hsp_photos_'+i)||'[]');
-  const tabs=[{id:'overview',label:'Overview'},{id:'jobs',label:'Jobs ('+cj.length+')'},{id:'photos',label:'Photos ('+photos.length+')'},{id:'notes',label:'Notes'}];
-  const tabBar=tabs.map(function(t){const a=activeFileTab===t.id;return '<button onclick="switchFileTab(\'' + t.id + '\')" style="padding:8px 14px;font-size:12px;font-weight:600;border:none;background:'+(a?'var(--navy)':'transparent')+';color:'+(a?'#fff':'var(--ink3)')+';border-radius:8px;cursor:pointer;font-family:var(--font)">'+t.label+'</button>';}).join('');
-  let body='';
+  var i=activeCustomerIdx,c=customers[i];if(!c)return;
+  var cj=jobs.filter(function(j){return j.customerId===i;});
+  var totalSpend=cj.reduce(function(a,j){return a+(j.amount||0);},0);
+  var photos=JSON.parse(localStorage.getItem('hsp_photos_'+i)||'[]');
+  var tabDefs=[{id:'overview',label:'Overview'},{id:'jobs',label:'Jobs ('+cj.length+')'},{id:'photos',label:'Photos ('+photos.length+')'},{id:'notes',label:'Notes'}];
+  var tabBar=tabDefs.map(function(t){var a=activeFileTab===t.id;return '<button onclick="switchFileTab(\''+t.id+'\')" style="padding:8px 14px;font-size:12px;font-weight:600;border:none;background:'+(a?'var(--navy)':'transparent')+';color:'+(a?'#fff':'var(--ink3)')+';border-radius:8px;cursor:pointer;font-family:var(--font)">'+t.label+'</button>';}).join('');
+  var body='';
   if(activeFileTab==='overview'){
     body='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
       +'<div style="background:var(--bg);border-radius:var(--radius);padding:12px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink3);letter-spacing:.06em;margin-bottom:4px">Total spend</div><div style="font-size:22px;font-weight:700;color:var(--accent)">$'+Math.round(totalSpend).toLocaleString()+'</div></div>'
@@ -1330,21 +1347,20 @@ function renderCustomerFile(){
       +'</div>'
       +'<div style="background:var(--bg);border-radius:var(--radius);padding:14px;margin-bottom:12px">'
       +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink3);letter-spacing:.06em;margin-bottom:10px">Contact info</div>'
-      +'<div style="font-size:13px;color:var(--ink);line-height:2.2">'
+      +'<div style="font-size:13px;color:var(--ink);line-height:2">'
       +(c.phone?'📞 <a href="tel:'+c.phone+'" style="color:var(--accent)">'+c.phone+'</a><br>':'')
       +(c.email?'✉️ <a href="mailto:'+c.email+'" style="color:var(--accent)">'+c.email+'</a><br>':'')
       +(c.address?'📍 '+c.address+'<br>':'')
-      +'📅 Since '+(c.added||'')
-      +'</div></div>'
+      +'📅 Since '+(c.added||'')+'</div></div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-      +'<button class="btn btn-sm btn-primary" onclick="addJobFor('+i+');closeModal('customer-file')">+ Add job</button>'
-      +'<button class="btn btn-sm" onclick="draftFollowUp('+i+');closeModal('customer-file')">Draft email</button>'
+      +'<button class="btn btn-sm btn-primary" onclick="addJobFor('+i+');closeModal(\'customer-file\')">+ Add job</button>'
+      +'<button class="btn btn-sm" onclick="draftFollowUp('+i+');closeModal(\'customer-file\')">Draft email</button>'
       +'<button class="btn btn-sm" style="color:#f4b400;border-color:#f4b400" onclick="sendReviewRequest('+i+')">⭐ Review</button>'
       +'</div>';
   }
   if(activeFileTab==='jobs'){
     body=cj.length?cj.map(function(j){
-      const ji=jobs.indexOf(j);
+      var ji=jobs.indexOf(j);
       return '<div class="card" style="margin-bottom:8px">'
         +'<div class="card-head"><div><div class="card-name" style="font-size:14px">'+j.type+'</div>'
         +'<div class="card-sub">'+(j.desc||'')+'</div>'
@@ -1358,11 +1374,11 @@ function renderCustomerFile(){
         +'<button class="btn btn-sm" onclick="editJobStatus('+ji+')">Edit status</button>'
         +(j.paid?'':'<button class="btn btn-sm btn-primary" onclick="openPayment('+ji+')">Request payment</button>')
         +'</div></div>';
-    }).join('')+'<button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="addJobFor('+i+');closeModal('customer-file')">+ Add job</button>'
-    :'<div class="empty">No jobs yet.</div><button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="addJobFor('+i+');closeModal('customer-file')">+ Add job</button>';
+    }).join('')+'<button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="addJobFor('+i+');closeModal(\'customer-file\')">+ Add job</button>'
+    :'<div class="empty">No jobs yet.</div><button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="addJobFor('+i+');closeModal(\'customer-file\')">+ Add job</button>';
   }
   if(activeFileTab==='photos'){
-    body='<div style="background:var(--bg);border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:12px;cursor:pointer" onclick="document.getElementById('photo-inp-'+i+'').click()">'
+    body='<div style="background:var(--bg);border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:12px;cursor:pointer" onclick="document.getElementById(\'photo-inp-'+i+'\').click()">'
       +'<div style="font-size:28px;margin-bottom:6px">📸</div>'
       +'<div style="font-size:13px;font-weight:600;color:var(--navy)">Add before &amp; after photos</div>'
       +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">Tap to upload from camera roll</div>'
@@ -1373,10 +1389,10 @@ function renderCustomerFile(){
             return '<div style="position:relative">'
               +'<img src="'+p.data+'" style="width:100%;border-radius:8px;aspect-ratio:1;object-fit:cover"/>'
               +'<div style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">'+(p.label||'')+'</div>'
-              +'<button onclick="removePhoto('+i+','+pi+')" style="position:absolute;top:4px;right:4px;background:rgba(200,0,0,.85);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1">×</button>'
+              +'<button onclick="removePhoto('+i+','+pi+')" style="position:absolute;top:4px;right:4px;background:rgba(200,0,0,.85);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1">x</button>'
               +'</div>';
           }).join('')+'</div>'
-        :'<div class="empty" style="padding:20px 0">No photos yet. Add before &amp; after photos to document your work.</div>');
+        :'<div class="empty" style="padding:20px 0">No photos yet.</div>');
   }
   if(activeFileTab==='notes'){
     body='<div style="margin-bottom:10px;font-size:12px;color:var(--ink3)">Property notes, gate codes, special instructions...</div>'
@@ -1387,46 +1403,43 @@ function renderCustomerFile(){
     '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">'
     +'<div><div style="font-size:20px;font-weight:700;color:var(--navy)">'+c.name+'</div>'
     +'<div style="font-size:12px;color:var(--ink3)">'+(c.address||'')+'</div></div>'
-    +'<button onclick="closeModal('customer-file')" style="background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:var(--font)">Close</button>'
+    +'<button onclick="closeModal(\'customer-file\')" style="background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:var(--font)">Close</button>'
     +'</div>'
     +'<div style="display:flex;gap:6px;margin-bottom:16px;background:var(--bg);padding:4px;border-radius:10px;overflow-x:auto">'+tabBar+'</div>'
     +'<div>'+body+'</div>';
 }
-
 function saveCustomerNotes(i){
   customers[i].notes=document.getElementById('cust-notes-edit').value;
   saveLocal();
   if(SB&&customers[i].id)SB.from('customers').update({notes:customers[i].notes}).eq('id',customers[i].id).then();
-  toast('Notes saved ✓');
+  toast('Notes saved');
 }
-
 function addPhotos(i,input){
-  const files=Array.from(input.files);
-  const photos=JSON.parse(localStorage.getItem('hsp_photos_'+i)||'[]');
-  let loaded=0;
+  var files=Array.from(input.files);
+  var photos=JSON.parse(localStorage.getItem('hsp_photos_'+i)||'[]');
+  var loaded=0;
   files.forEach(function(file){
-    const reader=new FileReader();
+    var reader=new FileReader();
     reader.onload=function(e){
-      const label=photos.length%2===0?'Before':'After';
+      var label=photos.length%2===0?'Before':'After';
       photos.push({data:e.target.result,label:label,date:new Date().toLocaleDateString()});
       loaded++;
       if(loaded===files.length){
         localStorage.setItem('hsp_photos_'+i,JSON.stringify(photos));
         renderCustomerFile();
-        toast(loaded+' photo'+(loaded>1?'s':'')+' added ✓');
+        toast(loaded+' photo'+(loaded>1?'s':'')+' added');
       }
     };
     reader.readAsDataURL(file);
   });
 }
-
 function removePhoto(i,pi){
   if(!confirm('Remove this photo?'))return;
-  const photos=JSON.parse(localStorage.getItem('hsp_photos_'+i)||'[]');
+  var photos=JSON.parse(localStorage.getItem('hsp_photos_'+i)||'[]');
   photos.splice(pi,1);
   localStorage.setItem('hsp_photos_'+i,JSON.stringify(photos));
   renderCustomerFile();
-  toast('Photo removed ✓');
+  toast('Photo removed');
 }
 
 // ── INIT ──
@@ -1436,6 +1449,27 @@ dbLoad().then(()=>renderDash());
 renderCalendar();
 </script>
 
+  <div class="pin-grid">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn zero" onclick="pinPress('0')">0</button>
+    <button class="pin-btn del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error">Incorrect PIN. Try again.</div>
+</div>
 
+
+<!-- CUSTOMER FILE MODAL -->
+<div class="modal-bg" id="modal-customer-file"><div class="modal" style="max-width:600px">
+  <span class="modal-handle"></span>
+  <div id="customer-file-content"></div>
+</div></div>
 </body>
 </html>
