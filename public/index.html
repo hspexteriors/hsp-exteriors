@@ -1438,7 +1438,7 @@ function renderCustomerFile(){
   const totalSpend=cj.reduce((a,j)=>a+(j.amount||0),0);
   const photos=JSON.parse(localStorage.getItem('hsp_photos_'+i)||'[]');
   const tabs=[{id:'overview',label:'Overview'},{id:'jobs',label:'Jobs ('+cj.length+')'},{id:'photos',label:'Photos ('+photos.length+')'},{id:'notes',label:'Notes'}];
-  const tabBar=tabs.map(t=>'<button onclick="switchFileTab(''+t.id+'')" style="padding:8px 14px;font-size:12px;font-weight:600;border:none;background:'+(activeFileTab===t.id?'var(--navy)':'transparent')+';color:'+(activeFileTab===t.id?'#fff':'var(--ink3)')+';border-radius:8px;cursor:pointer;font-family:var(--font)">'+t.label+'</button>').join('');
+  const tabBar=tabs.map(t=>{const active=activeFileTab===t.id;return '<button onclick="switchFileTab(\''+t.id+'\')" style="padding:8px 14px;font-size:12px;font-weight:600;border:none;background:'+(active?'var(--navy)':'transparent')+';color:'+(active?'#fff':'var(--ink3)')+';border-radius:8px;cursor:pointer;font-family:var(--font)">'+t.label+'</button>';}).join('');
   let body='';
   if(activeFileTab==='overview'){
     body='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
