@@ -150,20 +150,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 24px;border-radius:99px;font-size:14px;font-weight:500;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow-lg);}
 @media(min-width:768px){
-/* PIN LOCK */
-.pin-screen{position:fixed;inset:0;background:#0f1e3c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;}
-.pin-logo{color:#fff;font-size:24px;font-weight:700;margin-bottom:4px;}
-.pin-sub{color:#b8c8d8;font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:40px;}
-.pin-dots{display:flex;gap:16px;margin-bottom:32px;}
-.pin-dot{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s;}
-.pin-dot.filled{background:#7ab8e8;}
-.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:280px;}
-.pin-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px;font-size:24px;font-weight:600;color:#fff;cursor:pointer;text-align:center;transition:all .12s;font-family:var(--font);}
-.pin-btn:active{background:rgba(255,255,255,.2);transform:scale(.95);}
-.pin-btn.zero{grid-column:2;}
-.pin-btn.del{background:transparent;border-color:transparent;font-size:18px;color:#b8c8d8;}
-.pin-error{color:#ff6b6b;font-size:13px;margin-top:16px;opacity:0;transition:opacity .2s;}
-.pin-error.show{opacity:1;}
+
 
 .toast{bottom:24px;}}
 .toast.show{opacity:1;}
@@ -1449,37 +1436,6 @@ dbLoad().then(()=>renderDash());
 renderCalendar();
 </script>
 
-<!-- PIN LOCK SCREEN -->
-<div class="pin-screen" id="pin-screen">
-  <div class="pin-logo">HSP Exterior Cleaning</div>
-  <div class="pin-sub">Business Management</div>
-  <div class="pin-dots">
-    <div class="pin-dot" id="pd0"></div>
-    <div class="pin-dot" id="pd1"></div>
-    <div class="pin-dot" id="pd2"></div>
-    <div class="pin-dot" id="pd3"></div>
-  </div>
-  <div class="pin-grid">
-    <button class="pin-btn" onclick="pinPress('1')">1</button>
-    <button class="pin-btn" onclick="pinPress('2')">2</button>
-    <button class="pin-btn" onclick="pinPress('3')">3</button>
-    <button class="pin-btn" onclick="pinPress('4')">4</button>
-    <button class="pin-btn" onclick="pinPress('5')">5</button>
-    <button class="pin-btn" onclick="pinPress('6')">6</button>
-    <button class="pin-btn" onclick="pinPress('7')">7</button>
-    <button class="pin-btn" onclick="pinPress('8')">8</button>
-    <button class="pin-btn" onclick="pinPress('9')">9</button>
-    <button class="pin-btn zero" onclick="pinPress('0')">0</button>
-    <button class="pin-btn del" onclick="pinDel()">⌫</button>
-  </div>
-  <div class="pin-error" id="pin-error">Incorrect PIN. Try again.</div>
-</div>
 
-
-<!-- CUSTOMER FILE MODAL -->
-<div class="modal-bg" id="modal-customer-file"><div class="modal" style="max-width:600px">
-  <span class="modal-handle"></span>
-  <div id="customer-file-content"></div>
-</div></div>
 </body>
 </html>
