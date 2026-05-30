@@ -128,6 +128,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15p
 .addr-wrap{display:flex;gap:8px;}
 .addr-wrap input{flex:1;}
 .gps-btn{padding:13px 14px;border-radius:var(--radius);border:1.5px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;font-size:18px;}
+.pin-screen{position:fixed;inset:0;background:#0f1e3c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;}
+.pin-logo{color:#fff;font-size:22px;font-weight:700;margin-bottom:4px;text-align:center;}
+.pin-sub{color:#b8c8d8;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:40px;}
+.pin-dots{display:flex;gap:16px;margin-bottom:32px;}
+.pin-dot{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s;}
+.pin-dot.filled{background:#7ab8e8;}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:280px;}
+.pin-key{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px;font-size:24px;font-weight:600;color:#fff;cursor:pointer;text-align:center;font-family:var(--font);}
+.pin-key:active{background:rgba(255,255,255,.2);}
+.pin-key.zero{grid-column:2;}
+.pin-key.del{background:transparent;border-color:transparent;font-size:18px;color:#b8c8d8;}
+.pin-error{color:#ff6b6b;font-size:13px;margin-top:16px;opacity:0;transition:opacity .2s;text-align:center;}
+.pin-error.show{opacity:1;}
 </style>
 </head>
 <body>
@@ -1259,10 +1272,56 @@ function renderSettings(){
 }
 function updateBadge(){var b=document.getElementById('api-badge');if(cfg.apiKey){b.textContent='AI: active';b.classList.add('set');}else{b.textContent='AI: not set';b.classList.remove('set');}}
 
+// ── PIN ──
+var PIN_CORRECT='0183';
+var pinEntry='';
+function pinCheck(){if(sessionStorage.getItem('hsp_unlocked')==='true'){document.getElementById('pin-screen').style.display='none';}}
+function pinPress(digit){if(pinEntry.length>=4)return;pinEntry+=digit;updatePinDots();if(pinEntry.length===4)setTimeout(pinVerify,150);}
+function pinDel(){pinEntry=pinEntry.slice(0,-1);updatePinDots();document.getElementById('pin-error').classList.remove('show');}
+function updatePinDots(){for(var k=0;k<4;k++){document.getElementById('pd'+k).classList.toggle('filled',k<pinEntry.length);}}
+function pinVerify(){
+  if(pinEntry===PIN_CORRECT){
+    sessionStorage.setItem('hsp_unlocked','true');
+    var s=document.getElementById('pin-screen');
+    s.style.transition='opacity .3s';s.style.opacity='0';
+    setTimeout(function(){s.style.display='none';},300);
+  }else{
+    document.getElementById('pin-error').classList.add('show');
+    var d=document.querySelector('.pin-dots');var n=0;
+    var t=setInterval(function(){d.style.transform=n%2===0?'translateX(8px)':'translateX(-8px)';if(++n>5){clearInterval(t);d.style.transform='';}},80);
+    pinEntry='';updatePinDots();
+  }
+}
 // ── INIT ──
+pinCheck();
 updateBadge();
 dbLoad().then(function(){renderDash();});
 renderCalendar();
 </script>
+
+<div class="pin-screen" id="pin-screen">
+  <div class="pin-logo">HSP Exterior Cleaning</div>
+  <div class="pin-sub">Business Management</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-grid">
+    <div class="pin-key" onclick="pinPress('1')">1</div>
+    <div class="pin-key" onclick="pinPress('2')">2</div>
+    <div class="pin-key" onclick="pinPress('3')">3</div>
+    <div class="pin-key" onclick="pinPress('4')">4</div>
+    <div class="pin-key" onclick="pinPress('5')">5</div>
+    <div class="pin-key" onclick="pinPress('6')">6</div>
+    <div class="pin-key" onclick="pinPress('7')">7</div>
+    <div class="pin-key" onclick="pinPress('8')">8</div>
+    <div class="pin-key" onclick="pinPress('9')">9</div>
+    <div class="pin-key zero" onclick="pinPress('0')">0</div>
+    <div class="pin-key del" onclick="pinDel()">&#9003;</div>
+  </div>
+  <div class="pin-error" id="pin-error">Incorrect PIN. Try again.</div>
+</div>
 </body>
 </html>
