@@ -1181,6 +1181,8 @@ function buildDocHtml(doc){
 
 function deleteDoc(i){
   if(!confirm('Delete this '+invoices[i].docType+'?'))return;
+  var doc=invoices[i];
+  if(SB&&doc.id)SB.from('invoices').delete().eq('id',doc.id).then();
   invoices.splice(i,1);saveLocal();renderInvoices();toast('Deleted');
 }
 function convertToInvoice(i){
