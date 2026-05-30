@@ -458,6 +458,7 @@ async function initSB(){
 }
 
 async function dbLoad(){
+  sbInited=false;
   var ok=await initSB();
   if(!ok){loadLocal();return;}
   try{
@@ -1277,7 +1278,7 @@ function updateBadge(){var b=document.getElementById('api-badge');if(cfg.apiKey)
 // ── PIN ──
 var PIN_CORRECT='0183';
 var pinEntry='';
-function pinCheck(){if(sessionStorage.getItem('hsp_unlocked')==='true'){document.getElementById('pin-screen').style.display='none';}}
+function pinCheck(){var s=document.getElementById('pin-screen');if(!s)return;if(sessionStorage.getItem('hsp_unlocked')==='true'){s.style.display='none';dbLoad().then(function(){renderDash();});}}
 function pinPress(digit){if(pinEntry.length>=4)return;pinEntry+=digit;updatePinDots();if(pinEntry.length===4)setTimeout(pinVerify,150);}
 function pinDel(){pinEntry=pinEntry.slice(0,-1);updatePinDots();document.getElementById('pin-error').classList.remove('show');}
 function updatePinDots(){for(var k=0;k<4;k++){document.getElementById('pd'+k).classList.toggle('filled',k<pinEntry.length);}}
@@ -1286,7 +1287,7 @@ function pinVerify(){
     sessionStorage.setItem('hsp_unlocked','true');
     var s=document.getElementById('pin-screen');
     s.style.transition='opacity .3s';s.style.opacity='0';
-    setTimeout(function(){s.style.display='none';},300);
+    setTimeout(function(){s.style.display='none';dbLoad().then(function(){renderDash();});},300);
   }else{
     document.getElementById('pin-error').classList.add('show');
     var d=document.querySelector('.pin-dots');var n=0;
@@ -1297,7 +1298,6 @@ function pinVerify(){
 // ── INIT ──
 pinCheck();
 updateBadge();
-dbLoad().then(function(){renderDash();});
 renderCalendar();
 </script>
 
