@@ -546,10 +546,25 @@ async function dbLoad(){
     invoices=(res[4].data||[]).map(function(r){return{id:r.id,docType:r.doc_type,docNumber:r.doc_number,customerName:r.customer_name,customerAddress:r.customer_address,customerPhone:r.customer_phone,customerEmail:r.customer_email,lineItems:r.line_items||[],subtotal:r.subtotal,total:r.total,status:r.status,notes:r.notes,docDate:r.doc_date,validUntil:r.valid_until,stripeUrl:r.stripe_url,paid:r.paid,added:r.added||''};});
     try{
       var txRes=await SB.from('transactions').select('*').order('created_at',{ascending:false});
-      if(txRes.data&&txRes.data.length){transactions=txRes.data;saveTransactions();}
+      if(txRes.data&&txRes.data.length){
+        transactions=txRes.data;
+        localStorage.setItem('hsp_transactions',JSON.stringify(transactions));
+      } else {
+        // Keep local data if Supabase is empty or table doesn't exist yet
+        transactions=JSON.parse(localStorage.getItem('hsp_transactions')||'[]');
+      }
       var goalsRes=await SB.from('fin_goals').select('*').order('created_at',{ascending:false});
-      if(goalsRes.data&&goalsRes.data.length){finGoals=goalsRes.data;saveGoals();}
-    }catch(e){}
+      if(goalsRes.data&&goalsRes.data.length){
+        finGoals=goalsRes.data;
+        localStorage.setItem('hsp_goals',JSON.stringify(finGoals));
+      } else {
+        finGoals=JSON.parse(localStorage.getItem('hsp_goals')||'[]');
+      }
+    }catch(e){
+      // Supabase tables may not exist yet - keep local data safe
+      transactions=JSON.parse(localStorage.getItem('hsp_transactions')||'[]');
+      finGoals=JSON.parse(localStorage.getItem('hsp_goals')||'[]');
+    }
     saveLocal();toast('Synced');
   }catch(e){console.error(e);loadLocal();}
 }
@@ -579,6 +594,8 @@ function loadLocal(){
   contacts=JSON.parse(localStorage.getItem('hsp_contacts')||'[]');
   campaigns=JSON.parse(localStorage.getItem('hsp_campaigns')||'[]');
   invoices=JSON.parse(localStorage.getItem('hsp_invoices')||'[]');
+  transactions=JSON.parse(localStorage.getItem('hsp_transactions')||'[]');
+  finGoals=JSON.parse(localStorage.getItem('hsp_goals')||'[]');
 }
 function saveLocal(){
   localStorage.setItem('hsp_customers',JSON.stringify(customers));
@@ -586,6 +603,8 @@ function saveLocal(){
   localStorage.setItem('hsp_contacts',JSON.stringify(contacts));
   localStorage.setItem('hsp_campaigns',JSON.stringify(campaigns));
   localStorage.setItem('hsp_invoices',JSON.stringify(invoices));
+  localStorage.setItem('hsp_transactions',JSON.stringify(transactions));
+  localStorage.setItem('hsp_goals',JSON.stringify(finGoals));
 }
 function saveCfg(){
   cfg.sbUrl=SUPABASE_URL;cfg.sbKey=SUPABASE_KEY;
@@ -1420,7 +1439,8 @@ function pinVerify(){
 
 // ── FINANCES ──
 var transactions = JSON.parse(localStorage.getItem('hsp_transactions')||'[]');
-var finGoals = JSON.parse(localStorage.getItem('hsp_goals')||'[]');
+var _g1=localStorage.getItem('hsp_goals'),_g2=localStorage.getItem('hsp_fin_goals');
+var finGoals = JSON.parse(_g1||_g2||'[]'); // read from either old or new key
 var finYear = new Date().getFullYear();
 var finMonth = new Date().getMonth();
 
@@ -1428,7 +1448,7 @@ var EXP_CATS = ['Gas','Chemicals','Equipment','Food','Insurance','Labor','Market
 var CAT_COLORS = {Gas:'#e67e22',Chemicals:'#8e44ad',Equipment:'#2980b9',Food:'#27ae60',Insurance:'#2c3e50',Labor:'#d35400',Marketing:'#e91e63',Tools:'#16a085',Other:'#7f8c8d'};
 
 function saveTransactions(){localStorage.setItem('hsp_transactions',JSON.stringify(transactions));}
-function saveGoals(){localStorage.setItem('hsp_fin_goals',JSON.stringify(finGoals));}
+function saveGoals(){localStorage.setItem('hsp_goals',JSON.stringify(finGoals));}
 
 function finMoveMonth(d){
   finMonth += d;
