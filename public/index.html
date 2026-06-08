@@ -547,10 +547,9 @@ async function dbLoad(){
     try{
       var txRes=await SB.from('transactions').select('*').order('created_at',{ascending:false});
       if(txRes.data&&txRes.data.length){
-        transactions=txRes.data;
+        transactions=txRes.data.map(function(r){return Object.assign({},r,{desc:r.description||r.desc||''});});
         localStorage.setItem('hsp_transactions',JSON.stringify(transactions));
       } else {
-        // Keep local data if Supabase is empty or table doesn't exist yet
         transactions=JSON.parse(localStorage.getItem('hsp_transactions')||'[]');
       }
       var goalsRes=await SB.from('fin_goals').select('*').order('created_at',{ascending:false});
@@ -577,7 +576,7 @@ async function dbInsert(table,row){
     contacts:function(r){return{name:r.name,phone:r.phone,email:r.email,address:r.address,source:r.source,status:r.status,added:r.added};},
     campaigns:function(r){return{name:r.name,type:r.type,target:r.target,sent:r.sent,opened:r.opened,replied:r.replied,campaign_date:r.date};},
     invoices:function(r){return{doc_type:r.docType,doc_number:r.docNumber,customer_name:r.customerName,customer_address:r.customerAddress,customer_phone:r.customerPhone,customer_email:r.customerEmail,line_items:r.lineItems,subtotal:r.subtotal,total:r.total,status:r.status,notes:r.notes,doc_date:r.docDate,valid_until:r.validUntil,stripe_url:r.stripeUrl||null,paid:r.paid||false,added:r.added};},
-    transactions:function(r){return{type:r.type,desc:r.desc,amount:r.amount,date:r.date,category:r.category||null,notes:r.notes||null,customer:r.customer||null,added:r.added};},
+    transactions:function(r){return{type:r.type,description:r.desc,amount:r.amount,date:r.date,category:r.category||null,notes:r.notes||null,customer:r.customer||null,added:r.added};},
     fin_goals:function(r){return{name:r.name,target:r.target,period:r.period,notes:r.notes||null,created:r.created};},
     settings:function(r){return{id:'main',data:JSON.stringify(cfg)};}
   };
