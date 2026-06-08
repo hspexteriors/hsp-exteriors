@@ -1563,8 +1563,72 @@ function viewReceipt(id){
 
 function deleteTransaction(id){
   if(!confirm('Delete this transaction?'))return;
-  transactions = transactions.filter(function(t){return t.id !== id;});
-  saveTransactions();renderFinances();toast('Deleted');
+  var t = transactions.find(function(tx){return tx.id===id;});
+  transactions = transactions.filter(function(tx){return tx.id !== id;});
+  saveTransactions();
+  if(SB&&t&&t.id){SB.from('transactions').delete().eq('id',t.id).then();}
+  renderFinances();toast('Deleted');
+}
+
+function editTransaction(id){
+  var t = transactions.find(function(tx){return tx.id===id;});
+  if(!t) return;
+  var isIncome = t.type === 'income';
+  var modal = document.createElement('div');
+  modal.id = 'edit-tx-modal';
+  modal.setAttribute('data-txid', String(id));
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(10,20,50,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
+  var catOptions = ['Gas','Chemicals','Equipment','Food','Insurance','Labor','Marketing','Tools','Other'].map(function(c){
+    return '<option value="'+c+'"'+(t.category===c?' selected':'')+'>'+c+'</option>';
+  }).join('');
+  modal.innerHTML = '<div style="background:var(--surface);border-radius:var(--radius-xl);padding:24px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto">'
+    +'<div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:16px">Edit transaction</div>'
+    +'<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:6px">Description</label>'
+    +'<input id="etx-desc" value="'+( t.desc||'').replace(/"/g,'&quot;')+'" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:15px;background:var(--surface);color:var(--ink);font-family:var(--font)"/></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'
+    +'<div><label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:6px">Amount ($)</label>'
+    +'<input id="etx-amount" type="number" value="'+t.amount+'" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:15px;background:var(--surface);color:var(--ink);font-family:var(--font)"/></div>'
+    +'<div><label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:6px">Date</label>'
+    +'<input id="etx-date" type="date" value="'+t.date+'" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:15px;background:var(--surface);color:var(--ink);font-family:var(--font)"/></div>'
+    +'</div>'
+    +(!isIncome?'<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:6px">Category</label>'
+    +'<select id="etx-cat" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:15px;background:var(--surface);color:var(--ink);font-family:var(--font)">'+catOptions+'</select></div>':'')
+    +'<div style="margin-bottom:16px"><label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:6px">Notes</label>'
+    +'<input id="etx-notes" value="'+(t.notes||'').replace(/"/g,'&quot;')+'" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:15px;background:var(--surface);color:var(--ink);font-family:var(--font)"/></div>'
+    +'<div style="display:flex;gap:10px">'
+    +'<button onclick="closeEditTxModal()" style="flex:1;padding:13px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--ink);font-family:var(--font)">Cancel</button>'
+    +'<button onclick="saveEditTx()" style="flex:1;padding:13px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--navy);background:var(--navy);color:#fff;font-family:var(--font)">Save</button>'
+    +'</div></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){if(e.target===modal)modal.remove();});
+}
+
+function closeEditTxModal(){var m=document.getElementById('edit-tx-modal');if(m)m.remove();}
+function saveEditTx(){var m=document.getElementById('edit-tx-modal');if(!m)return;saveEditTransaction(m.getAttribute('data-txid'));}
+function saveEditTransaction(id){
+  var idx = transactions.findIndex(function(tx){return tx.id===id||String(tx.id)===String(id);});
+  if(idx===-1){toast('Transaction not found');return;}
+  var isIncome = transactions[idx].type === 'income';
+  var catEl = document.getElementById('etx-cat');
+  transactions[idx].desc = document.getElementById('etx-desc').value.trim();
+  transactions[idx].amount = parseFloat(document.getElementById('etx-amount').value)||0;
+  transactions[idx].date = document.getElementById('etx-date').value;
+  if(!isIncome&&catEl) transactions[idx].category = catEl.value;
+  transactions[idx].notes = document.getElementById('etx-notes').value;
+  saveTransactions();
+  if(SB&&transactions[idx].id){
+    SB.from('transactions').update({
+      description: transactions[idx].desc,
+      amount: transactions[idx].amount,
+      date: transactions[idx].date,
+      category: transactions[idx].category||null,
+      notes: transactions[idx].notes||null
+    }).eq('id',transactions[idx].id).then();
+  }
+  var modal = document.getElementById('edit-tx-modal');
+  if(modal) modal.remove();
+  renderFinances();
+  toast('Transaction updated');
 }
 
 function deleteGoal(id){
@@ -1723,7 +1787,8 @@ function renderFinances(){
         +'<div style="text-align:right;flex-shrink:0">'
         +'<div style="font-size:18px;font-weight:700;color:'+color+'">'+(isIncome?'+':'-')+'$'+t.amount.toFixed(2)+'</div>'
         +(t.receipt?'<div style="margin-top:4px"><button onclick="viewReceipt('+t.id+')" style="font-size:11px;color:var(--accent);border:none;background:none;cursor:pointer;font-family:var(--font)">📎 View receipt</button></div>':'')
-        +'<button onclick="deleteTransaction('+t.id+')" style="font-size:11px;color:var(--red);border:none;background:none;cursor:pointer;margin-top:4px;font-family:var(--font)">Delete</button>'
+        +'<button onclick="editTransaction('+t.id+')" style="font-size:11px;color:var(--accent);border:none;background:none;cursor:pointer;margin-top:4px;font-family:var(--font);display:block">Edit</button>'
+        +'<button onclick="deleteTransaction('+t.id+')" style="font-size:11px;color:var(--red);border:none;background:none;cursor:pointer;margin-top:2px;font-family:var(--font);display:block">Delete</button>'
         +'</div></div></div>';
     }).join('');
   }
