@@ -1603,6 +1603,8 @@ function editTransaction(id){
   modal.addEventListener('click', function(e){if(e.target===modal)modal.remove();});
 }
 
+function editTx(btn){editTransaction(btn.getAttribute('data-txid'));}
+function delTx(btn){deleteTransaction(btn.getAttribute('data-txid'));}
 function closeEditTxModal(){var m=document.getElementById('edit-tx-modal');if(m)m.remove();}
 function saveEditTx(){var m=document.getElementById('edit-tx-modal');if(!m)return;saveEditTransaction(m.getAttribute('data-txid'));}
 function saveEditTransaction(id){
@@ -1787,8 +1789,8 @@ function renderFinances(){
         +'<div style="text-align:right;flex-shrink:0">'
         +'<div style="font-size:18px;font-weight:700;color:'+color+'">'+(isIncome?'+':'-')+'$'+t.amount.toFixed(2)+'</div>'
         +(t.receipt?'<div style="margin-top:4px"><button onclick="viewReceipt('+t.id+')" style="font-size:11px;color:var(--accent);border:none;background:none;cursor:pointer;font-family:var(--font)">📎 View receipt</button></div>':'')
-        +'<button onclick="editTransaction('+t.id+')" style="font-size:11px;color:var(--accent);border:none;background:none;cursor:pointer;margin-top:4px;font-family:var(--font);display:block">Edit</button>'
-        +'<button onclick="deleteTransaction('+t.id+')" style="font-size:11px;color:var(--red);border:none;background:none;cursor:pointer;margin-top:2px;font-family:var(--font);display:block">Delete</button>'
+        +'<button onclick="editTx(this)" data-txid="'+t.id+'" style="font-size:11px;color:var(--accent);border:none;background:none;cursor:pointer;margin-top:4px;font-family:var(--font);display:block">Edit</button>'
+        +'<button onclick="delTx(this)" data-txid="'+t.id+'" style="font-size:11px;color:var(--red);border:none;background:none;cursor:pointer;margin-top:2px;font-family:var(--font);display:block">Delete</button>'
         +'</div></div></div>';
     }).join('');
   }
